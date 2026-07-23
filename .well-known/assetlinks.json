@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.windrunnerspk_stack.twa",
+        "sha256_cert_fingerprints": ["C1:9A:A7:8A:2E:57:66:C9:4E:FA:BD:E9:C1:07:2E:EB:2D:20:D7:94:08:57:C1:50:83:F2:29:AD:6A:2B:28:14"]
+      }
+    }]
