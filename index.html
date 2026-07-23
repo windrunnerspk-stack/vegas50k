@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>VEGAS 50K · Dashboard de Apuestas</title>
+<meta name="theme-color" content="#0b0b0e">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=> navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --noir:#0b0b0e;
+  --panel:#141419;
+  --panel2:#1a1a21;
+  --line:#26262f;
+  --ivory:#f2efe6;
+  --muted:#8b8b98;
+  --gold:#d4af37;
+  --gold-dim:#8f7a2e;
+  --win:#3ddc84;
+  --loss:#ff4d5e;
+  --felt:#0e3b2a;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:
+    radial-gradient(1200px 600px at 50% -200px, rgba(212,175,55,.08), transparent 60%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.012) 0 2px, transparent 2px 8px),
+    var(--noir);
+  color:var(--ivory);
+  font-family:'Barlow',sans-serif;
+  min-height:100%;
+  padding-bottom:96px;
+}
+.wrap{max-width:520px;margin:0 auto;padding:20px 16px}
+
+/* ===== HEADER / CHIP ===== */
+header{display:flex;flex-direction:column;align-items:center;padding:14px 0 6px}
+.chip{width:130px;height:130px;filter:drop-shadow(0 10px 24px rgba(0,0,0,.6));animation:chipIn .8s cubic-bezier(.2,.9,.3,1.2) both;cursor:pointer}
+.chip:active{filter:drop-shadow(0 4px 12px rgba(212,175,55,.5))}
+@keyframes chipIn{from{transform:scale(.6) rotate(-30deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.chip.spin{animation:chipSpin .9s cubic-bezier(.3,.7,.3,1) both}
+@keyframes chipSpin{from{transform:rotate(0) scale(1)}50%{transform:rotate(360deg) scale(1.08)}to{transform:rotate(720deg) scale(1)}}
+.brand{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.28em;margin-top:12px;color:var(--ivory)}
+.brand span{color:var(--gold)}
+.sub{font-size:11px;letter-spacing:.34em;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.premium-badge{
+  display:inline-flex;align-items:center;gap:5px;margin-top:8px;
+  background:linear-gradient(90deg,rgba(212,175,55,.18),rgba(212,175,55,.08));
+  border:1px solid var(--gold);color:var(--gold);border-radius:20px;
+  padding:4px 13px;font-size:10px;font-weight:700;letter-spacing:.22em;
+}
+
+/* ===== PROFIT ===== */
+.profit-card{
+  margin-top:20px;border:1px solid var(--line);border-radius:16px;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  padding:22px 18px;text-align:center;position:relative;overflow:hidden;
+}
+.profit-card::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(400px 120px at 50% 0%, rgba(212,175,55,.12), transparent 70%);
+  pointer-events:none;
+}
+.profit-label{font-size:11px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase}
+.profit-value{
+  font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:40px;
+  margin-top:6px;font-variant-numeric:tabular-nums;transition:color .3s;
+  text-shadow:0 0 30px rgba(212,175,55,.15);word-break:break-all;
+}
+.profit-value.pos{color:var(--win)}
+.profit-value.neg{color:var(--loss)}
+.stats{display:flex;border-top:1px solid var(--line);margin-top:18px;padding-top:14px}
+.stat{flex:1}
+.stat b{display:block;font-family:'IBM Plex Mono',monospace;font-size:15px;font-variant-numeric:tabular-nums}
+.stat.win b{color:var(--win)} .stat.loss b{color:var(--loss)}
+.stat small{font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+
+/* bankroll banner */
+.bank-card{margin-top:12px;border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px 16px}
+.bank-top{display:flex;justify-content:space-between;align-items:baseline;font-size:12px}
+.bank-top b{font-family:'IBM Plex Mono';font-size:14px}
+.bank-top small{color:var(--muted);letter-spacing:.14em;text-transform:uppercase;font-size:10px}
+.bank-bar{height:7px;border-radius:5px;background:var(--panel2);margin-top:9px;overflow:hidden}
+.bank-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--win),#a8e063);transition:width .4s}
+.bank-fill.warn{background:linear-gradient(90deg,#f0c040,#e67e22)}
+.bank-fill.danger{background:linear-gradient(90deg,#e74c3c,var(--loss))}
+.bank-alert{
+  margin-top:12px;border:1px solid var(--loss);background:rgba(255,77,94,.1);color:#ffb3ba;
+  border-radius:12px;padding:11px 14px;font-size:13px;line-height:1.45;font-weight:500;
+}
+.bank-alert.soft{border-color:#e67e22;background:rgba(230,126,34,.1);color:#f5c98f}
+
+/* ===== FORM ===== */
+.form-card{margin-top:16px;border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:16px}
+.form-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.18em;color:var(--gold);margin-bottom:12px}
+.toggle{display:flex;gap:8px;margin-bottom:12px}
+.toggle button{
+  flex:1;padding:12px;border-radius:10px;border:1px solid var(--line);
+  background:var(--panel2);color:var(--muted);font-family:'Barlow';font-weight:700;
+  font-size:14px;letter-spacing:.08em;cursor:pointer;transition:.2s;text-transform:uppercase;
+}
+.toggle button.on-win{background:rgba(61,220,132,.14);border-color:var(--win);color:var(--win)}
+.toggle button.on-loss{background:rgba(255,77,94,.14);border-color:var(--loss);color:var(--loss)}
+label{display:block;font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin:12px 0 5px}
+label em{font-style:normal;color:#55555f;letter-spacing:.1em;text-transform:none}
+input,textarea{
+  width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  color:var(--ivory);padding:12px;font-family:'Barlow';font-size:16px;outline:none;transition:border-color .2s;
+}
+input:focus,textarea:focus{border-color:var(--gold)}
+input.mono{font-family:'IBM Plex Mono',monospace;font-weight:600}
+textarea{resize:none;height:70px}
+.sports{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.sports::-webkit-scrollbar{display:none}
+.sport-chip{
+  flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+  padding:9px 13px;cursor:pointer;transition:.18s;color:var(--muted);min-width:64px;
+}
+.sport-chip .ico{font-size:20px;line-height:1}
+.sport-chip .nm{font-size:9.5px;letter-spacing:.08em;font-weight:600;text-transform:uppercase;white-space:nowrap}
+.sport-chip.sel{background:rgba(212,175,55,.14);border-color:var(--gold);color:var(--gold);transform:translateY(-1px)}
+.score-row{display:flex;gap:8px;align-items:center}
+.score-row input{text-align:center}
+.score-row .vs{color:var(--gold);font-family:'Bebas Neue';font-size:16px;letter-spacing:.1em}
+.add-btn{
+  width:100%;margin-top:16px;padding:15px;border:none;border-radius:12px;cursor:pointer;
+  font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.22em;
+  background:linear-gradient(180deg,#e6c458,var(--gold) 60%,#b3932c);color:#1a1405;
+  box-shadow:0 6px 18px rgba(212,175,55,.25), inset 0 1px 0 rgba(255,255,255,.4);
+  transition:transform .12s;
+}
+.add-btn:active{transform:scale(.98)}
+
+/* ===== HISTORY ===== */
+.hist-head{display:flex;justify-content:space-between;align-items:center;margin:6px 4px 12px}
+.hist-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.18em;color:var(--ivory)}
+.reset-btn{
+  background:transparent;border:1px solid var(--loss);color:var(--loss);
+  padding:7px 14px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:.14em;
+  cursor:pointer;text-transform:uppercase;transition:.2s;
+}
+.reset-btn:hover{background:rgba(255,77,94,.12)}
+.entry{
+  border:1px solid var(--line);border-left:3px solid var(--muted);border-radius:12px;
+  background:var(--panel);padding:13px 14px;margin-bottom:10px;animation:slideIn .3s ease both;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.entry.win{border-left-color:var(--win)}
+.entry.loss{border-left-color:var(--loss)}
+.entry-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.entry-match{font-weight:600;font-size:15px}
+.entry-match .sp{margin-right:5px}
+.entry-amt{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:15px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.entry.win .entry-amt{color:var(--win)} .entry.loss .entry-amt{color:var(--loss)}
+.entry-score{
+  display:inline-block;margin-top:6px;font-family:'IBM Plex Mono',monospace;font-weight:600;
+  font-size:13px;background:var(--felt);color:#bfe8d2;border:1px solid #1c5c42;
+  padding:3px 10px;border-radius:6px;letter-spacing:.08em;
+}
+.entry-note{margin-top:7px;font-size:13.5px;color:#c9c9d4;line-height:1.45}
+.entry-foot{display:flex;justify-content:space-between;align-items:center;margin-top:9px}
+.entry-date{font-size:11px;color:var(--muted);letter-spacing:.06em}
+.del-btn{background:none;border:1px solid var(--line);border-radius:7px;color:var(--muted);font-size:11px;cursor:pointer;letter-spacing:.1em;padding:5px 10px;transition:.2s;font-weight:600}
+.del-btn:hover{color:var(--loss);border-color:var(--loss)}
+.empty{
+  text-align:center;color:var(--muted);padding:36px 20px;border:1px dashed var(--line);
+  border-radius:12px;font-size:14px;line-height:1.6;
+}
+.empty b{color:var(--gold);font-family:'Bebas Neue';letter-spacing:.16em;font-size:16px;display:block;margin-bottom:4px}
+.filters{display:flex;gap:8px;margin-bottom:14px}
+.filters button{
+  flex:1;padding:9px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);
+  color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.1em;cursor:pointer;text-transform:uppercase;transition:.2s;
+}
+.filters button.sel{border-color:var(--gold);color:var(--gold);background:rgba(212,175,55,.1)}
+
+/* ===== STATS PRO ===== */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.stat-box{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px;text-align:center}
+.stat-box .v{font-family:'IBM Plex Mono';font-weight:700;font-size:19px;margin-top:2px}
+.stat-box .v.pos{color:var(--win)} .stat-box .v.neg{color:var(--loss)} .stat-box .v.gold{color:var(--gold)}
+.stat-box .l{font-size:9.5px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.chart-card{border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:16px;margin-top:14px}
+.chart-title{font-family:'Bebas Neue';font-size:15px;letter-spacing:.18em;color:var(--gold);margin-bottom:10px}
+.sport-stat{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line)}
+.sport-stat:last-child{border-bottom:none}
+.sport-stat .si{font-size:19px;flex:0 0 26px}
+.sport-stat .sn{flex:1;font-size:13px;font-weight:600}
+.sport-stat .sn small{display:block;color:var(--muted);font-weight:400;font-size:11px}
+.wr-bar{flex:0 0 90px;height:7px;border-radius:5px;background:var(--panel2);overflow:hidden}
+.wr-fill{height:100%;background:linear-gradient(90deg,var(--loss),#f0c040 50%,var(--win))}
+.wr-pct{flex:0 0 44px;text-align:right;font-family:'IBM Plex Mono';font-weight:700;font-size:13px}
+.locked-preview{position:relative;overflow:hidden;border-radius:16px;margin-top:16px}
+.locked-preview .blurred{filter:blur(7px);pointer-events:none;user-select:none;opacity:.65}
+.lock-overlay{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;background:rgba(11,11,14,.55);text-align:center;padding:20px;
+}
+.lock-overlay .lk{font-size:34px}
+.lock-overlay p{font-size:13.5px;color:var(--ivory);max-width:260px;line-height:1.5}
+
+/* ===== MÁS / AJUSTES ===== */
+.menu-card{border:1px solid var(--line);border-radius:16px;background:var(--panel);margin-top:14px;overflow:hidden}
+.menu-item{
+  display:flex;align-items:center;gap:13px;padding:15px 16px;cursor:pointer;
+  border-bottom:1px solid var(--line);transition:background .2s;
+}
+.menu-item:last-child{border-bottom:none}
+.menu-item:active{background:var(--panel2)}
+.menu-item .mi{font-size:21px;flex:0 0 28px;text-align:center}
+.menu-item .mt{flex:1}
+.menu-item .mt b{font-size:14.5px;display:block}
+.menu-item .mt small{color:var(--muted);font-size:12px;line-height:1.35;display:block;margin-top:1px}
+.menu-item .lock{color:var(--gold);font-size:13px;font-weight:700;letter-spacing:.06em;white-space:nowrap}
+.menu-item .chev{color:var(--muted)}
+.premium-cta{
+  margin-top:14px;border:1px solid var(--gold);border-radius:16px;padding:18px 16px;text-align:center;
+  background:linear-gradient(160deg,rgba(212,175,55,.14),rgba(212,175,55,.03));cursor:pointer;
+}
+.premium-cta h4{font-family:'Bebas Neue';font-size:21px;letter-spacing:.16em;color:var(--gold)}
+.premium-cta p{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.45}
+.premium-cta .price{
+  display:inline-block;margin-top:11px;background:linear-gradient(180deg,#e6c458,var(--gold) 60%,#b3932c);
+  color:#1a1405;font-family:'Bebas Neue';font-size:18px;letter-spacing:.14em;
+  padding:10px 26px;border-radius:10px;
+}
+.cur-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px;max-height:46vh;overflow-y:auto;padding-right:2px}
+.cur-opt{
+  border:1px solid var(--line);border-radius:12px;background:var(--panel2);padding:10px 6px;
+  text-align:center;cursor:pointer;transition:.18s;
+}
+.cur-opt .cf{font-size:20px}
+.cur-opt .cc{font-family:'IBM Plex Mono';font-weight:700;font-size:13px;margin-top:3px}
+.cur-opt .cn{font-size:9px;color:var(--muted);margin-top:1px;line-height:1.2}
+.cur-opt.sel{border-color:var(--gold);background:rgba(212,175,55,.12)}
+.cur-opt.sel .cc{color:var(--gold)}
+.chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.chip-opt{border:1px solid var(--line);border-radius:14px;background:var(--panel2);padding:14px 8px;text-align:center;cursor:pointer;transition:.18s;position:relative}
+.chip-opt svg{width:74px;height:74px}
+.chip-opt .cpn{font-size:11px;font-weight:700;letter-spacing:.1em;margin-top:7px;text-transform:uppercase}
+.chip-opt.sel{border-color:var(--gold);background:rgba(212,175,55,.1)}
+.chip-opt .cplock{position:absolute;top:8px;right:10px;font-size:14px}
+
+/* ===== NAV ===== */
+.nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:40;
+  background:rgba(13,13,17,.92);backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);
+}
+.nav-inner{max-width:520px;margin:0 auto;display:flex}
+.nav button{
+  flex:1;background:none;border:none;color:var(--muted);cursor:pointer;
+  padding:11px 0 max(11px, env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-family:'Barlow';transition:.2s;
+}
+.nav button .nico{font-size:21px;line-height:1}
+.nav button .nlbl{font-size:9.5px;letter-spacing:.16em;font-weight:700;text-transform:uppercase}
+.nav button.sel{color:var(--gold)}
+.nav button.sel .nico{transform:translateY(-2px)}
+
+/* ===== MODALES ===== */
+.overlay{
+  position:fixed;inset:0;background:rgba(5,5,8,.85);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;z-index:50;padding:20px;
+}
+.overlay.show{display:flex;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{
+  background:var(--panel);border:1px solid var(--gold-dim);border-radius:18px;
+  max-width:370px;width:100%;padding:26px 22px;text-align:center;
+  animation:popIn .25s cubic-bezier(.2,.9,.3,1.3);max-height:88vh;overflow-y:auto;
+}
+@keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.modal .chip-mini{width:64px;height:64px;margin:0 auto 12px;animation:chipSpin 1.2s cubic-bezier(.3,.7,.3,1) both}
+.modal h3{font-family:'Bebas Neue';font-size:22px;letter-spacing:.14em;color:var(--loss)}
+.modal h3.gold{color:var(--gold)}
+.modal h3.ivory{color:var(--ivory)}
+.modal p{font-size:14px;color:var(--muted);margin:8px 0 20px;line-height:1.5}
+.modal-btns{display:flex;gap:10px}
+.modal-btns button{flex:1;padding:13px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;letter-spacing:.06em;border:none}
+.btn-cancel{background:var(--panel2);border:1px solid var(--line) !important;color:var(--ivory)}
+.btn-confirm{background:var(--loss);color:#fff}
+.btn-gold{background:linear-gradient(180deg,#e6c458,var(--gold) 60%,#b3932c);color:#1a1405;font-family:'Bebas Neue';font-size:17px;letter-spacing:.14em}
+.tut-step{display:flex;gap:12px;text-align:left;margin-bottom:14px;align-items:flex-start}
+.tut-step .tico{
+  flex:0 0 38px;height:38px;border-radius:50%;background:var(--panel2);border:1px solid var(--gold-dim);
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+}
+.tut-step div p{margin:2px 0 0;font-size:13px;line-height:1.45}
+.tut-step div b{font-size:13.5px;color:var(--ivory);letter-spacing:.04em}
+.pm-feat{display:flex;gap:11px;text-align:left;margin-bottom:12px;align-items:center}
+.pm-feat .pf{flex:0 0 34px;height:34px;border-radius:9px;background:rgba(212,175,55,.12);border:1px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:16px}
+.pm-feat p{margin:0;font-size:13px;line-height:1.4;color:var(--ivory)}
+.pm-feat p small{display:block;color:var(--muted);font-size:11.5px}
+/* pago USDT */
+.pay-net{display:inline-block;background:rgba(61,220,132,.12);border:1px solid var(--win);color:var(--win);border-radius:16px;padding:4px 14px;font-size:11px;font-weight:700;letter-spacing:.14em;margin-bottom:12px}
+.pay-qr{width:170px;height:170px;border-radius:14px;background:#fff;padding:8px;margin:0 auto 12px;display:block}
+.wallet-box{
+  display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--gold-dim);
+  border-radius:11px;padding:10px 12px;margin-bottom:12px;
+}
+.wallet-box code{
+  flex:1;font-family:'IBM Plex Mono';font-size:11.5px;color:var(--ivory);
+  word-break:break-all;text-align:left;line-height:1.4;
+}
+.copy-btn{
+  flex:0 0 auto;background:var(--gold);border:none;color:#1a1405;font-weight:700;
+  font-size:11px;padding:8px 12px;border-radius:8px;cursor:pointer;letter-spacing:.06em;
+}
+.pay-amount{font-family:'IBM Plex Mono';font-weight:700;font-size:26px;color:var(--gold);margin-bottom:2px}
+.pay-status{border-radius:11px;padding:11px 13px;font-size:13px;line-height:1.45;margin-top:12px;display:none;text-align:left}
+.pay-status.show{display:block}
+.pay-status.ok{background:rgba(61,220,132,.1);border:1px solid var(--win);color:#bfe8d2}
+.pay-status.err{background:rgba(255,77,94,.1);border:1px solid var(--loss);color:#ffb3ba}
+.pay-status.wait{background:rgba(212,175,55,.1);border:1px solid var(--gold-dim);color:#e8d9a0}
+.pay-steps{text-align:left;font-size:12.5px;color:var(--muted);line-height:1.6;margin:0 0 12px;padding-left:18px}
+.pay-steps b{color:var(--ivory)}
+.toast{
+  position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(140px);
+  background:var(--panel2);border:1px solid var(--gold);color:var(--ivory);
+  padding:11px 20px;border-radius:30px;font-size:13.5px;font-weight:600;
+  z-index:60;transition:transform .3s cubic-bezier(.2,.9,.3,1.2);white-space:nowrap;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:92vw;overflow:hidden;text-overflow:ellipsis;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.loading{text-align:center;padding:60px 0;color:var(--muted);letter-spacing:.2em;font-size:12px;text-transform:uppercase}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div id="chipHolder"></div>
+    <div class="brand">VEGAS <span>50K</span></div>
+    <div class="sub">Dashboard de apuestas</div>
+    <div id="badgeHolder"></div>
+  </header>
+  <div id="app"><div class="loading">Cargando banca…</div></div>
+</div>
+
+<!-- MENÚ INFERIOR -->
+<nav class="nav">
+  <div class="nav-inner">
+    <button id="nav-home" class="sel" onclick="goTab('home')"><span class="nico">🎰</span><span class="nlbl">Registrar</span></button>
+    <button id="nav-hist" onclick="goTab('hist')"><span class="nico">📋</span><span class="nlbl">Historial</span></button>
+    <button id="nav-stats" onclick="goTab('stats')"><span class="nico">📊</span><span class="nlbl">Stats</span></button>
+    <button id="nav-more" onclick="goTab('more')"><span class="nico">⚙️</span><span class="nlbl">Más</span></button>
+  </div>
+</nav>
+
+<!-- MODAL SELECCIÓN DE MONEDA (primer arranque) -->
+<div class="overlay" id="curOverlay">
+  <div class="modal">
+    <div id="curChip"></div>
+    <h3 class="gold">ELIGE TU MONEDA</h3>
+    <p style="margin-bottom:12px">Todas tus ganancias y pérdidas se mostrarán en esta moneda. Puedes cambiarla luego en <b>Más → Moneda</b>.</p>
+    <div class="cur-grid" id="curGrid"></div>
+    <div class="modal-btns" style="margin-top:18px">
+      <button class="btn-gold" onclick="confirmCurrency()">CONTINUAR →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RESET -->
+<div class="overlay" id="resetOverlay">
+  <div class="modal">
+    <div class="chip-mini" id="resetChip"></div>
+    <h3>¿ESTÁS SEGURO?</h3>
+    <p>Vas a resetear todo el historial y el profit acumulado. Esta acción <b>no se puede deshacer</b>.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeReset()">Cancelar</button>
+      <button class="btn-confirm" onclick="confirmReset()">Sí, resetear</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BORRAR ENTRADA -->
+<div class="overlay" id="delOverlay">
+  <div class="modal">
+    <h3 class="ivory">¿ELIMINAR REGISTRO?</h3>
+    <p id="delText">Se eliminará este registro y su monto se descontará del profit automáticamente.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeDel()">Cancelar</button>
+      <button class="btn-confirm" onclick="confirmDel()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TUTORIAL -->
+<div class="overlay" id="tutOverlay">
+  <div class="modal">
+    <div class="chip-mini" id="tutChip"></div>
+    <h3 class="gold">BIENVENIDO A VEGAS 50K</h3>
+    <p style="margin-bottom:16px">Tu dashboard personal para llevar el control de tus apuestas deportivas. Así funciona:</p>
+    <div class="tut-step"><div class="tico">🏅</div><div><b>Elige el deporte</b><p>Fútbol, boxeo, tenis, básquet, eSports y más. El marcador se adapta solo a cada deporte y es opcional.</p></div></div>
+    <div class="tut-step"><div class="tico">💰</div><div><b>Registra tus jugadas</b><p>Marca si fue ganancia o pérdida, el monto, el partido y una nota.</p></div></div>
+    <div class="tut-step"><div class="tico">📈</div><div><b>Profit automático</b><p>Todo lo ganado se suma y lo perdido se resta. El total se actualiza al instante.</p></div></div>
+    <div class="tut-step"><div class="tico">📋</div><div><b>Historial editable</b><p>Si te equivocas, elimina el registro y el profit se corrige solo.</p></div></div>
+    <div class="tut-step"><div class="tico">👑</div><div><b>Premium</b><p>Desbloquea Estadísticas Pro, Modo Bankroll, exportar a Excel y fichas coleccionables con un único pago dentro de la app (menú Más).</p></div></div>
+    <div class="tut-step"><div class="tico">🔒</div><div><b>Guardado en tu dispositivo</b><p>Tus datos quedan guardados aunque cierres la app.</p></div></div>
+    <div class="modal-btns" style="margin-top:6px">
+      <button class="btn-gold" onclick="closeTutorial()">ENTENDIDO · ¡A JUGAR! 🎲</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PREMIUM -->
+<div class="overlay" id="pmOverlay">
+  <div class="modal">
+    <div class="chip-mini" id="pmChip"></div>
+    <h3 class="gold">VEGAS 50K PREMIUM</h3>
+    <p style="margin-bottom:14px">Desbloquea <b>todas</b> estas funciones con un único pago. Para siempre. Compra segura procesada por Google Play.</p>
+    <div class="pm-feat"><div class="pf">📊</div><p><b>Estadísticas Pro</b><small>Gráfica del profit, win rate por deporte, rachas, mejor y peor jugada.</small></p></div>
+    <div class="pm-feat"><div class="pf">🎯</div><p><b>Modo Bankroll</b><small>Define tu banca y límites de pérdida diaria/semanal. La app te frena a tiempo.</small></p></div>
+    <div class="pm-feat"><div class="pf">📤</div><p><b>Exportar historial</b><small>Descarga todas tus jugadas en Excel (CSV) con un toque.</small></p></div>
+    <div class="pm-feat"><div class="pf">🪙</div><p><b>Fichas coleccionables</b><small>Cambia el logo por fichas doradas, rubí, esmeralda o zafiro.</small></p></div>
+    <div class="modal-btns" style="margin-top:16px;flex-direction:column">
+      <button class="btn-gold" id="pmBuyBtn" onclick="buyPremiumPlay()">DESBLOQUEAR TODO · $0.99</button>
+      <button class="btn-cancel" onclick="closePm()">Ahora no</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PAGO USDT -->
+<div class="overlay" id="payOverlay">
+  <div class="modal">
+    <h3 class="gold">💳 PAGO CON USDT</h3>
+    <div class="pay-net">RED: TRON (TRC-20)</div>
+    <div class="pay-amount">0.99 USDT</div>
+    <p style="margin:2px 0 12px;font-size:12px">Envía exactamente este monto (o más) a la siguiente cartera:</p>
+    <img class="pay-qr" id="payQR" alt="QR de la cartera USDT">
+    <div class="wallet-box">
+      <code id="payWallet"></code>
+      <button class="copy-btn" onclick="copyWallet()">COPIAR</button>
+    </div>
+    <ol class="pay-steps">
+      <li>Abre tu wallet (Binance, Trust Wallet, OKX…).</li>
+      <li>Envía <b>0.99 USDT</b> por la red <b>TRC-20</b> a esa dirección.</li>
+      <li>Copia el <b>hash de la transacción (TxID)</b> y pégalo abajo.</li>
+    </ol>
+    <label style="text-align:left">Hash de la transacción (TxID)</label>
+    <input class="mono" id="payTx" type="text" placeholder="Ej: 7f3a9c…" autocomplete="off" spellcheck="false">
+    <div class="pay-status" id="payStatus"></div>
+    <div class="modal-btns" style="margin-top:16px;flex-direction:column">
+      <button class="btn-gold" id="payVerifyBtn" onclick="verifyPayment()">VERIFICAR PAGO ✓</button>
+      <button class="btn-cancel" onclick="closePay()">Volver</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BANKROLL CONFIG -->
+<div class="overlay" id="bkOverlay">
+  <div class="modal" style="text-align:left">
+    <h3 class="gold" style="text-align:center">🎯 MODO BANKROLL</h3>
+    <p style="text-align:center">Apostar con cabeza es apostar mejor. Define tu banca y tus límites.</p>
+    <label>Banca inicial</label>
+    <input class="mono" id="bkInit" type="number" inputmode="decimal" min="0" step="any" placeholder="Ej: 500000">
+    <label>Límite de pérdida diaria <em>· 0 = sin límite</em></label>
+    <input class="mono" id="bkDay" type="number" inputmode="decimal" min="0" step="any" placeholder="Ej: 50000">
+    <label>Límite de pérdida semanal <em>· 0 = sin límite</em></label>
+    <input class="mono" id="bkWeek" type="number" inputmode="decimal" min="0" step="any" placeholder="Ej: 200000">
+    <div class="modal-btns" style="margin-top:18px">
+      <button class="btn-cancel" onclick="closeBk()">Cancelar</button>
+      <button class="btn-gold" onclick="saveBk()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= CONFIG ================= */
+const SPORTS = [
+  {id:'futbol',   nm:'Fútbol',   ico:'⚽', score:'duo', ph:['Ej: Real Madrid vs Barcelona','Goles local','Goles visita']},
+  {id:'basket',   nm:'Básquet',  ico:'🏀', score:'duo', ph:['Ej: Lakers vs Celtics','Puntos local','Puntos visita']},
+  {id:'tenis',    nm:'Tenis',    ico:'🎾', score:'duo', ph:['Ej: Alcaraz vs Sinner','Sets J1','Sets J2']},
+  {id:'boxeo',    nm:'Boxeo',    ico:'🥊', score:'txt', ph:['Ej: Canelo vs Crawford','Ej: KO round 3 / Decisión unánime']},
+  {id:'mma',      nm:'MMA',      ico:'🥋', score:'txt', ph:['Ej: Jones vs Aspinall','Ej: Sumisión R2 / Decisión dividida']},
+  {id:'beisbol',  nm:'Béisbol',  ico:'⚾', score:'duo', ph:['Ej: Yankees vs Dodgers','Carreras local','Carreras visita']},
+  {id:'nfl',      nm:'F. Amer.', ico:'🏈', score:'duo', ph:['Ej: Chiefs vs Eagles','Puntos local','Puntos visita']},
+  {id:'voley',    nm:'Vóley',    ico:'🏐', score:'duo', ph:['Ej: Brasil vs Italia','Sets equipo 1','Sets equipo 2']},
+  {id:'carreras', nm:'Carreras', ico:'🏎️', score:'txt', ph:['Ej: GP de Mónaco','Ej: Verstappen P1']},
+  {id:'esports',  nm:'eSports',  ico:'🎮', score:'duo', ph:['Ej: G2 vs T1 (LoL)','Mapas eq. 1','Mapas eq. 2']},
+  {id:'caballos', nm:'Hípica',   ico:'🐎', score:'txt', ph:['Ej: Carrera 5, Hipódromo','Ej: Caballo #7 ganador']},
+  {id:'otro',     nm:'Otro',     ico:'🎯', score:'txt', ph:['Evento o partido','Resultado (opcional)']}
+];
+const CURRENCIES = {
+  COP: {flag:'🇨🇴', code:'COP',  name:'Peso colombiano',   sym:'$',    dec:0, loc:'es-CO'},
+  USD: {flag:'🇺🇸', code:'USD',  name:'Dólar EE.UU.',       sym:'US$',  dec:2, loc:'en-US'},
+  EUR: {flag:'🇪🇺', code:'EUR',  name:'Euro',               sym:'€',    dec:2, loc:'de-DE'},
+  USDT:{flag:'🪙', code:'USDT', name:'Tether',             sym:'₮',    dec:2, loc:'en-US', suf:' USDT'},
+  MXN: {flag:'🇲🇽', code:'MXN',  name:'Peso mexicano',      sym:'$',    dec:2, loc:'es-MX'},
+  ARS: {flag:'🇦🇷', code:'ARS',  name:'Peso argentino',     sym:'$',    dec:0, loc:'es-AR'},
+  BRL: {flag:'🇧🇷', code:'BRL',  name:'Real brasileño',     sym:'R$',   dec:2, loc:'pt-BR'},
+  PEN: {flag:'🇵🇪', code:'PEN',  name:'Sol peruano',        sym:'S/',   dec:2, loc:'es-PE'},
+  CLP: {flag:'🇨🇱', code:'CLP',  name:'Peso chileno',       sym:'$',    dec:0, loc:'es-CL'},
+  VES: {flag:'🇻🇪', code:'VES',  name:'Bolívar',            sym:'Bs.',  dec:2, loc:'es-VE'},
+  BOB: {flag:'🇧🇴', code:'BOB',  name:'Boliviano',          sym:'Bs',   dec:2, loc:'es-BO'},
+  UYU: {flag:'🇺🇾', code:'UYU',  name:'Peso uruguayo',      sym:'$U',   dec:2, loc:'es-UY'},
+  PYG: {flag:'🇵🇾', code:'PYG',  name:'Guaraní',            sym:'₲',    dec:0, loc:'es-PY'},
+  GTQ: {flag:'🇬🇹', code:'GTQ',  name:'Quetzal',            sym:'Q',    dec:2, loc:'es-GT'},
+  DOP: {flag:'🇩🇴', code:'DOP',  name:'Peso dominicano',    sym:'RD$',  dec:2, loc:'es-DO'},
+  CRC: {flag:'🇨🇷', code:'CRC',  name:'Colón',              sym:'₡',    dec:0, loc:'es-CR'},
+  HNL: {flag:'🇭🇳', code:'HNL',  name:'Lempira',            sym:'L',    dec:2, loc:'es-HN'},
+  NIO: {flag:'🇳🇮', code:'NIO',  name:'Córdoba',            sym:'C$',   dec:2, loc:'es-NI'},
+  PAB: {flag:'🇵🇦', code:'PAB',  name:'Balboa',             sym:'B/.',  dec:2, loc:'es-PA'},
+  GBP: {flag:'🇬🇧', code:'GBP',  name:'Libra esterlina',    sym:'£',    dec:2, loc:'en-GB'},
+  CAD: {flag:'🇨🇦', code:'CAD',  name:'Dólar canadiense',   sym:'C$',   dec:2, loc:'en-CA'},
+  CHF: {flag:'🇨🇭', code:'CHF',  name:'Franco suizo',       sym:'CHF ', dec:2, loc:'de-CH'},
+  JPY: {flag:'🇯🇵', code:'JPY',  name:'Yen japonés',        sym:'¥',    dec:0, loc:'ja-JP'},
+  CNY: {flag:'🇨🇳', code:'CNY',  name:'Yuan chino',         sym:'¥',    dec:2, loc:'zh-CN'},
+  AUD: {flag:'🇦🇺', code:'AUD',  name:'Dólar australiano',  sym:'A$',   dec:2, loc:'en-AU'},
+  BTC: {flag:'₿',  code:'BTC',  name:'Bitcoin',            sym:'₿',    dec:8, loc:'en-US', suf:' BTC'},
+  ETH: {flag:'⟠',  code:'ETH',  name:'Ethereum',           sym:'Ξ',    dec:6, loc:'en-US', suf:' ETH'},
+  USDC:{flag:'🔵', code:'USDC', name:'USD Coin',           sym:'',     dec:2, loc:'en-US', suf:' USDC'}
+};
+/* Fichas coleccionables: [cara, franjas, texto, denominación, acento] */
+const CHIPS = [
+  {id:'classic', nm:'Clásica 50K',  free:true,  face:'#0d0d10', spot:'#f2efe6', txt:'#f2efe6', denom:'50K$',  sub:'HIGH ROLLER', accent:'#d4af37'},
+  {id:'gold',    nm:'Dorada 100K',  free:false, face:'#2b2008', spot:'#ffd700', txt:'#ffe9a8', denom:'100K$', sub:'GOLDEN CLUB', accent:'#ffd700'},
+  {id:'ruby',    nm:'Rubí 5K',      free:false, face:'#3d0a12', spot:'#ff4d5e', txt:'#ffd6da', denom:'5K$',   sub:'RED TABLE',   accent:'#ff4d5e'},
+  {id:'emerald', nm:'Esmeralda 25K',free:false, face:'#062e1f', spot:'#3ddc84', txt:'#c9f5dd', denom:'25K$',  sub:'FELT MASTER', accent:'#3ddc84'},
+  {id:'sapphire',nm:'Zafiro 500K',  free:false, face:'#081a3a', spot:'#5aa2ff', txt:'#d3e5ff', denom:'500K$', sub:'WHALE ONLY',  accent:'#5aa2ff'}
+];
+
+const K = { bets:'vegas50k-bets', tut:'vegas50k-tutorial-visto', cur:'vegas50k-moneda', pm:'vegas50k-premium', bank:'vegas50k-bankroll', chip:'vegas50k-ficha', tx:'vegas50k-tx-usadas' };
+
+/* ================= ESTADO ================= */
+let bets = [];
+let currency = null;          /* código, ej 'COP' */
+let curTemp = 'COP';          /* selección temporal en el modal */
+let premium = false;
+let bankroll = {init:0, day:0, week:0};
+let chipSel = 'classic';
+let entryType = 'win';
+let sportSel = 'futbol';
+let tab = 'home';
+let histFilter = 'all';
+let pendingDelId = null;
+let draft = {amt:'',match:'',s1:'',s2:'',stxt:'',note:''};
+
+const app = document.getElementById('app');
+const $ = id => document.getElementById(id);
+const getSport = id => SPORTS.find(s=>s.id===id) || SPORTS[SPORTS.length-1];
+const getChip = () => CHIPS.find(c=>c.id===chipSel) || CHIPS[0];
+const cur = () => CURRENCIES[currency] || CURRENCIES.COP;
+
+function fmt(n){
+  const c = cur();
+  const s = Math.abs(n).toLocaleString(c.loc,{minimumFractionDigits:0,maximumFractionDigits:c.dec});
+  return (n<0?'-':'') + c.sym + s + (c.suf||'');
+}
+function esc(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ================= FICHA SVG ================= */
+function chipSVG(size, cls, chipDef, idSuffix){
+  const c = chipDef || getChip();
+  let spots = '';
+  for(let i=0;i<8;i++) spots += `<rect x="91" y="4" width="18" height="20" rx="3" fill="${c.spot}" transform="rotate(${i*45} 100 100)"/>`;
+  return `
+  <svg class="${cls||''}" style="width:${size}px;height:${size}px" viewBox="0 0 200 200" ${cls==='chip'?'id="chipLogo" role="button" aria-label="Ficha de casino, toca para girar"':''}>
+    <defs>
+      <radialGradient id="shine${idSuffix}" cx="35%" cy="30%" r="80%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18"/>
+        <stop offset="55%" stop-color="${c.face}"/>
+        <stop offset="100%" stop-color="#000"/>
+      </radialGradient>
+    </defs>
+    <circle cx="100" cy="100" r="98" fill="${c.face}" stroke="#000" stroke-width="2"/>
+    <circle cx="100" cy="100" r="98" fill="url(#shine${idSuffix})"/>
+    ${spots}
+    <circle cx="100" cy="100" r="72" fill="none" stroke="${c.spot}" stroke-width="2.5"/>
+    <circle cx="100" cy="100" r="66" fill="${c.face}" stroke="${c.spot}" stroke-width="1" stroke-dasharray="3 4"/>
+    <path id="arcT${idSuffix}" d="M 100,100 m -54,0 a 54,54 0 1,1 108,0" fill="none"/>
+    <path id="arcB${idSuffix}" d="M 100,100 m -54,0 a 54,54 0 1,0 108,0" fill="none"/>
+    <text font-family="Bebas Neue, sans-serif" font-size="13" fill="${c.txt}" letter-spacing="3">
+      <textPath href="#arcT${idSuffix}" startOffset="50%" text-anchor="middle">★ LAS VEGAS ★</textPath>
+    </text>
+    <text font-family="Bebas Neue, sans-serif" font-size="11" fill="#8b8b98" letter-spacing="4">
+      <textPath href="#arcB${idSuffix}" startOffset="50%" text-anchor="middle">CASINO · NEVADA</textPath>
+    </text>
+    <text x="100" y="108" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="36" fill="${c.txt}" letter-spacing="1">${c.denom}</text>
+    <text x="100" y="126" text-anchor="middle" font-family="Barlow, sans-serif" font-size="8" fill="${c.accent}" letter-spacing="3">${c.sub}</text>
+  </svg>`;
+}
+function renderChipLogo(){
+  $('chipHolder').innerHTML = chipSVG(130,'chip',null,'H');
+  const chip = $('chipLogo');
+  chip.addEventListener('click', ()=>{
+    chip.classList.remove('spin'); void chip.offsetWidth; chip.classList.add('spin');
+  });
+  $('badgeHolder').innerHTML = premium ? `<span class="premium-badge">👑 PREMIUM</span>` : '';
+  /* fichas en modales */
+  $('resetChip').innerHTML = chipSVG(64,'',null,'R');
+  $('tutChip').innerHTML = `<div class="chip-mini">${chipSVG(64,'',null,'T')}</div>`;
+  $('pmChip').innerHTML = `<div class="chip-mini">${chipSVG(64,'',CHIPS[1],'P')}</div>`;
+}
+
+/* ================= STORAGE ================= */
+async function sGet(key){ try{ const r = await window.storage.get(key); return r? r.value : null; }catch(e){ return null; } }
+async function sSet(key,val){ try{ await window.storage.set(key,val); }catch(e){ toast('⚠️ No se pudo guardar'); } }
+
+async function loadData(){
+  const b = await sGet(K.bets);   if(b) try{ bets = JSON.parse(b); }catch(e){}
+  const c = await sGet(K.cur);    if(c) currency = c;
+  const p = await sGet(K.pm);     premium = (p==='1');
+  const bk = await sGet(K.bank);  if(bk) try{ bankroll = JSON.parse(bk); }catch(e){}
+  const ch = await sGet(K.chip);  if(ch) chipSel = ch;
+  if(!premium) chipSel = 'classic';
+
+  await initPlayBilling();
+  await checkPlayEntitlements();
+
+  renderChipLogo();
+  render();
+
+  if(!currency){
+    /* primer arranque: elegir moneda */
+    buildCurGrid('curGrid', true);
+    $('curChip').innerHTML = `<div class="chip-mini">${chipSVG(64,'',null,'C')}</div>`;
+    $('curOverlay').classList.add('show');
+  }else{
+    const t = await sGet(K.tut);
+    if(!t){ openTutorial(); await sSet(K.tut,'1'); }
+  }
+}
+const saveBets = () => sSet(K.bets, JSON.stringify(bets));
+
+/* ================= MONEDA ================= */
+function buildCurGrid(elId, isModal){
+  $(elId).innerHTML = Object.values(CURRENCIES).map(c=>`
+    <div class="cur-opt ${((isModal?curTemp:currency)===c.code)?'sel':''}" onclick="pickCur('${c.code}',${isModal})">
+      <div class="cf">${c.flag}</div>
+      <div class="cc">${c.code}</div>
+      <div class="cn">${c.name}</div>
+    </div>`).join('');
+}
+function pickCur(code, isModal){
+  if(isModal){ curTemp = code; buildCurGrid('curGrid', true); }
+  else{ currency = code; sSet(K.cur, code); render(); toast(`Moneda: ${CURRENCIES[code].flag} ${code}`); }
+}
+async function confirmCurrency(){
+  currency = curTemp;
+  await sSet(K.cur, currency);
+  $('curOverlay').classList.remove('show');
+  render();
+  const t = await sGet(K.tut);
+  if(!t){ openTutorial(); await sSet(K.tut,'1'); }
+}
+
+/* ================= NAV ================= */
+function goTab(t){
+  if(tab==='home') captureDraft();
+  tab = t;
+  ['home','hist','stats','more'].forEach(x=> $('nav-'+x).className = (x===t?'sel':''));
+  render();
+  window.scrollTo({top:0});
+}
+function captureDraft(){
+  if(!$('inAmt')) return;
+  draft = {
+    amt:$('inAmt').value, match:$('inMatch').value,
+    s1:$('inS1')?$('inS1').value:'', s2:$('inS2')?$('inS2').value:'',
+    stxt:$('inSTxt')?$('inSTxt').value:'', note:$('inNote').value
+  };
+}
+
+/* ================= CÁLCULOS ================= */
+function profitData(){
+  const profit = bets.reduce((s,b)=> s + (b.type==='win'? b.amount : -b.amount), 0);
+  const totalW = bets.filter(b=>b.type==='win').reduce((s,b)=>s+b.amount,0);
+  const totalL = bets.filter(b=>b.type==='loss').reduce((s,b)=>s+b.amount,0);
+  return {profit,totalW,totalL};
+}
+const ts = b => b.ts || b.id;
+function lossesSince(msAgoStart){
+  return bets.filter(b=> b.type==='loss' && ts(b) >= msAgoStart).reduce((s,b)=>s+b.amount,0);
+}
+function startOfToday(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+function startOfWeek(){ return Date.now() - 7*24*3600*1000; }
+
+/* ================= COMPONENTES ================= */
+function profitCard(){
+  const {profit,totalW,totalL} = profitData();
+  return `
+  <div class="profit-card">
+    <div class="profit-label">Profit total</div>
+    <div class="profit-value ${profit>0?'pos':profit<0?'neg':''}">${fmt(profit)}</div>
+    <div class="stats">
+      <div class="stat win"><b>+${fmt(totalW)}</b><small>Ganado</small></div>
+      <div class="stat"><b>${bets.length}</b><small>Apuestas</small></div>
+      <div class="stat loss"><b>-${fmt(totalL)}</b><small>Perdido</small></div>
+    </div>
+  </div>`;
+}
+function bankrollCard(){
+  if(!premium || !(bankroll.init>0 || bankroll.day>0 || bankroll.week>0)) return '';
+  const {profit} = profitData();
+  let html = '';
+  if(bankroll.init>0){
+    const banca = bankroll.init + profit;
+    const pct = Math.max(0, Math.min(100, (banca/bankroll.init)*100));
+    const cls = pct>=90? '' : pct>=50? 'warn' : 'danger';
+    html += `
+    <div class="bank-card">
+      <div class="bank-top"><small>🎯 Banca actual</small><b class="${banca>=bankroll.init?'':''}" style="color:${banca>=bankroll.init?'var(--win)':'var(--loss)'}">${fmt(banca)}</b></div>
+      <div class="bank-bar"><div class="bank-fill ${cls}" style="width:${pct}%"></div></div>
+      <div class="bank-top" style="margin-top:6px"><small>Inicial: ${fmt(bankroll.init)}</small><small>${pct.toFixed(0)}%</small></div>
+    </div>`;
+  }
+  const lossDay = lossesSince(startOfToday());
+  const lossWeek = lossesSince(startOfWeek());
+  if(bankroll.day>0 && lossDay >= bankroll.day){
+    html += `<div class="bank-alert">🛑 <b>Límite diario alcanzado.</b> Hoy llevas ${fmt(lossDay)} en pérdidas (límite: ${fmt(bankroll.day)}). La mesa siempre estará mañana. Para por hoy.</div>`;
+  }else if(bankroll.day>0 && lossDay >= bankroll.day*0.8){
+    html += `<div class="bank-alert soft">⚠️ Estás al ${Math.round(lossDay/bankroll.day*100)}% de tu límite de pérdida diaria (${fmt(lossDay)} de ${fmt(bankroll.day)}). Juega con cabeza.</div>`;
+  }
+  if(bankroll.week>0 && lossWeek >= bankroll.week){
+    html += `<div class="bank-alert">🛑 <b>Límite semanal alcanzado.</b> Esta semana llevas ${fmt(lossWeek)} en pérdidas (límite: ${fmt(bankroll.week)}).</div>`;
+  }
+  return html;
+}
+function entryHTML(b){
+  const sp = getSport(b.sport);
+  return `
+  <div class="entry ${b.type}">
+    <div class="entry-top">
+      <div class="entry-match"><span class="sp">${sp.ico}</span>${esc(b.match)||sp.nm}</div>
+      <div class="entry-amt">${b.type==='win'?'+':'−'}${fmt(b.amount)}</div>
+    </div>
+    ${b.score? `<span class="entry-score">${sp.ico} ${esc(b.score)}</span>`:''}
+    ${b.note? `<div class="entry-note">${esc(b.note)}</div>`:''}
+    <div class="entry-foot">
+      <span class="entry-date">${b.date}</span>
+      <button class="del-btn" onclick="openDel(${b.id})">✕ Eliminar</button>
+    </div>
+  </div>`;
+}
+
+/* ================= VISTAS ================= */
+function render(){
+  if(tab==='home') renderHome();
+  else if(tab==='hist') renderHist();
+  else if(tab==='stats') renderStats();
+  else renderMore();
+}
+
+function renderHome(){
+  const sp = getSport(sportSel);
+  const scoreBlock = sp.score==='duo'
+    ? `<label>Marcador <em>· opcional</em></label>
+       <div class="score-row">
+         <input class="mono" id="inS1" type="number" inputmode="numeric" min="0" placeholder="${sp.ph[1]}" value="${esc(draft.s1)}">
+         <span class="vs">—</span>
+         <input class="mono" id="inS2" type="number" inputmode="numeric" min="0" placeholder="${sp.ph[2]}" value="${esc(draft.s2)}">
+       </div>`
+    : `<label>Resultado <em>· opcional</em></label>
+       <input id="inSTxt" type="text" placeholder="${sp.ph[1]}" value="${esc(draft.stxt)}">`;
+
+  app.innerHTML = `
+  ${profitCard()}
+  ${bankrollCard()}
+  <div class="form-card">
+    <div class="form-title">◆ NUEVA JUGADA</div>
+    <div class="toggle">
+      <button id="btnWin" class="${entryType==='win'?'on-win':''}" onclick="setType('win')">✚ Ganancia</button>
+      <button id="btnLoss" class="${entryType==='loss'?'on-loss':''}" onclick="setType('loss')">− Pérdida</button>
+    </div>
+    <label>Deporte</label>
+    <div class="sports">
+      ${SPORTS.map(s=>`
+        <div class="sport-chip ${s.id===sportSel?'sel':''}" onclick="setSport('${s.id}')">
+          <span class="ico">${s.ico}</span><span class="nm">${s.nm}</span>
+        </div>`).join('')}
+    </div>
+    <label>Monto (${cur().code})</label>
+    <input class="mono" id="inAmt" type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="${esc(draft.amt)}">
+    <label>Partido / Evento</label>
+    <input id="inMatch" type="text" placeholder="${sp.ph[0]}" value="${esc(draft.match)}">
+    ${scoreBlock}
+    <label>Nota <em>· opcional</em></label>
+    <textarea id="inNote" placeholder="Cuota, tipo de apuesta, por cuánto ganaste o perdiste…">${esc(draft.note)}</textarea>
+    <button class="add-btn" onclick="addBet()">Registrar jugada</button>
+  </div>
+  <div class="hist-head" style="margin-top:24px">
+    <div class="hist-title" style="font-size:17px">ÚLTIMAS JUGADAS</div>
+  </div>
+  ${bets.length
+    ? bets.slice(0,3).map(entryHTML).join('') + (bets.length>3? `<div style="text-align:center;margin-top:4px"><button class="del-btn" style="border-color:var(--gold-dim);color:var(--gold)" onclick="goTab('hist')">Ver historial completo (${bets.length}) →</button></div>`:'')
+    : `<div class="empty"><b>MESA VACÍA</b>Registra tu primera jugada arriba.<br>Todo queda guardado en tu dispositivo.</div>`}
+  `;
+}
+
+function renderHist(){
+  const list = histFilter==='all' ? bets : bets.filter(b=>b.type===histFilter);
+  app.innerHTML = `
+  ${profitCard()}
+  <div class="hist-head" style="margin-top:22px">
+    <div class="hist-title">HISTORIAL</div>
+    ${bets.length? `<button class="reset-btn" onclick="openReset()">⟲ Resetear</button>`:''}
+  </div>
+  <div class="filters">
+    <button class="${histFilter==='all'?'sel':''}" onclick="setFilter('all')">Todo (${bets.length})</button>
+    <button class="${histFilter==='win'?'sel':''}" onclick="setFilter('win')">Ganadas</button>
+    <button class="${histFilter==='loss'?'sel':''}" onclick="setFilter('loss')">Perdidas</button>
+  </div>
+  ${list.length
+    ? list.map(entryHTML).join('')
+    : `<div class="empty"><b>SIN REGISTROS</b>${bets.length? 'No hay jugadas con este filtro.' : 'Aún no has registrado ninguna jugada.'}</div>`}
+  `;
+}
+
+/* ---- ESTADÍSTICAS PRO ---- */
+function statsContent(){
+  const {profit,totalW,totalL} = profitData();
+  const wins = bets.filter(b=>b.type==='win').length;
+  const wr = bets.length? Math.round(wins/bets.length*100) : 0;
+  /* racha actual */
+  let streak = 0, streakType = null;
+  for(const b of bets){ if(streakType===null) streakType=b.type; if(b.type===streakType) streak++; else break; }
+  /* mejor / peor */
+  const best = bets.filter(b=>b.type==='win').reduce((m,b)=> b.amount>m? b.amount:m, 0);
+  const worst = bets.filter(b=>b.type==='loss').reduce((m,b)=> b.amount>m? b.amount:m, 0);
+  const avg = bets.length? (totalW+totalL)/bets.length : 0;
+  /* gráfica: profit acumulado (cronológico) */
+  const chrono = [...bets].sort((a,b)=> ts(a)-ts(b));
+  let acc = 0; const pts = [0];
+  chrono.forEach(b=>{ acc += (b.type==='win'? b.amount : -b.amount); pts.push(acc); });
+  const W=440,H=150,pad=8;
+  const mn = Math.min(...pts), mx = Math.max(...pts);
+  const rng = (mx-mn)||1;
+  const px = i => pad + i*(W-2*pad)/Math.max(1,pts.length-1);
+  const py = v => H-pad - (v-mn)*(H-2*pad)/rng;
+  const path = pts.map((v,i)=> (i?'L':'M') + px(i).toFixed(1) + ',' + py(v).toFixed(1)).join(' ');
+  const zeroY = py(0);
+  const lastColor = acc>=0? 'var(--win)':'var(--loss)';
+  const chart = pts.length>1 ? `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">
+      <line x1="${pad}" y1="${zeroY}" x2="${W-pad}" y2="${zeroY}" stroke="#3a3a44" stroke-width="1" stroke-dasharray="4 4"/>
+      <path d="${path}" fill="none" stroke="${lastColor}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="${px(pts.length-1)}" cy="${py(acc)}" r="4" fill="${lastColor}"/>
+    </svg>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px">
+      <span>Inicio</span><span style="font-family:'IBM Plex Mono';color:${lastColor}">${fmt(acc)}</span>
+    </div>`
+    : `<div class="empty" style="padding:22px"><b>SIN DATOS</b>Registra jugadas para ver tu curva de profit.</div>`;
+  /* win rate por deporte */
+  const bySport = {};
+  bets.forEach(b=>{
+    if(!bySport[b.sport]) bySport[b.sport]={w:0,t:0,net:0};
+    bySport[b.sport].t++;
+    if(b.type==='win'){ bySport[b.sport].w++; bySport[b.sport].net+=b.amount; }
+    else bySport[b.sport].net-=b.amount;
+  });
+  const sportRows = Object.entries(bySport)
+    .sort((a,b)=> b[1].t-a[1].t)
+    .map(([id,d])=>{
+      const sp = getSport(id); const pct = Math.round(d.w/d.t*100);
+      return `<div class="sport-stat">
+        <span class="si">${sp.ico}</span>
+        <span class="sn">${sp.nm}<small>${d.t} jugada${d.t>1?'s':''} · neto <span style="color:${d.net>=0?'var(--win)':'var(--loss)'}">${fmt(d.net)}</span></small></span>
+        <span class="wr-bar"><span class="wr-fill" style="display:block;width:${pct}%"></span></span>
+        <span class="wr-pct" style="color:${pct>=50?'var(--win)':'var(--loss)'}">${pct}%</span>
+      </div>`;
+    }).join('');
+  return `
+  <div class="stat-grid">
+    <div class="stat-box"><div class="l">Win rate</div><div class="v ${wr>=50?'pos':'neg'}">${wr}%</div></div>
+    <div class="stat-box"><div class="l">Racha actual</div><div class="v ${streakType==='win'?'pos':streakType==='loss'?'neg':''}">${streak? (streakType==='win'?'🔥 ':'🧊 ')+streak : '—'}</div></div>
+    <div class="stat-box"><div class="l">Mejor jugada</div><div class="v pos">${best? '+'+fmt(best):'—'}</div></div>
+    <div class="stat-box"><div class="l">Peor jugada</div><div class="v neg">${worst? '−'+fmt(worst):'—'}</div></div>
+    <div class="stat-box"><div class="l">Promedio / apuesta</div><div class="v gold">${bets.length? fmt(avg):'—'}</div></div>
+    <div class="stat-box"><div class="l">Total apostado</div><div class="v gold">${fmt(totalW+totalL)}</div></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">📈 EVOLUCIÓN DEL PROFIT</div>
+    ${chart}
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">🏅 WIN RATE POR DEPORTE</div>
+    ${sportRows || `<div class="empty" style="padding:20px"><b>SIN DATOS</b>Aún no hay jugadas por deporte.</div>`}
+  </div>`;
+}
+
+function renderStats(){
+  if(premium){
+    app.innerHTML = `
+    <div class="hist-head" style="margin-top:6px">
+      <div class="hist-title">📊 ESTADÍSTICAS PRO</div>
+      <span class="premium-badge" style="margin:0">👑</span>
+    </div>
+    ${statsContent()}`;
+  }else{
+    app.innerHTML = `
+    <div class="hist-head" style="margin-top:6px">
+      <div class="hist-title">📊 ESTADÍSTICAS PRO</div>
+    </div>
+    <div class="locked-preview">
+      <div class="blurred">
+        <div class="stat-grid" style="margin-top:0">
+          <div class="stat-box"><div class="l">Win rate</div><div class="v pos">64%</div></div>
+          <div class="stat-box"><div class="l">Racha actual</div><div class="v pos">🔥 5</div></div>
+          <div class="stat-box"><div class="l">Mejor jugada</div><div class="v pos">+${fmt(250000)}</div></div>
+          <div class="stat-box"><div class="l">Peor jugada</div><div class="v neg">−${fmt(80000)}</div></div>
+        </div>
+        <div class="chart-card"><div class="chart-title">📈 EVOLUCIÓN DEL PROFIT</div>
+          <svg viewBox="0 0 440 150" style="width:100%"><path d="M8,120 L80,100 L150,110 L220,70 L290,85 L360,40 L432,25" fill="none" stroke="var(--win)" stroke-width="2.5"/></svg>
+        </div>
+      </div>
+      <div class="lock-overlay">
+        <span class="lk">🔒</span>
+        <p><b>Estadísticas Pro</b> hace parte de Vegas 50K Premium: gráfica del profit, win rate por deporte, rachas, bankroll, exportar y más.</p>
+        <button class="btn-gold" style="padding:12px 24px;border:none;border-radius:10px;cursor:pointer" onclick="openPm()">DESBLOQUEA TODO · $0.99</button>
+      </div>
+    </div>`;
+  }
+}
+
+/* ---- MÁS ---- */
+function renderMore(){
+  const lock = () => premium ? '' : `<span class="lock">🔒 Premium</span>`;
+  app.innerHTML = `
+  ${premium
+    ? `<div class="premium-cta" style="cursor:default"><h4>👑 PREMIUM ACTIVO</h4><p>Gracias por apoyar Vegas 50K. Tienes todas las funciones desbloqueadas para siempre.</p></div>`
+    : `<div class="premium-cta" onclick="openPm()">
+        <h4>👑 DESBLOQUEA TODO CON PREMIUM</h4>
+        <p>Estadísticas Pro · Modo Bankroll · Exportar a Excel · Fichas coleccionables<br>Todo incluido en un solo pago</p>
+        <span class="price">UN ÚNICO PAGO · $0.99</span>
+      </div>`}
+
+  <div class="menu-card">
+    <div class="menu-item" onclick="toggleCurSection()">
+      <span class="mi">💱</span>
+      <span class="mt"><b>Moneda</b><small>Actual: ${cur().flag} ${cur().code} — ${cur().name}</small></span>
+      <span class="chev">›</span>
+    </div>
+    <div id="curSection" style="display:none;padding:4px 16px 16px">
+      <div class="cur-grid" id="curGridMore"></div>
+    </div>
+    <div class="menu-item" onclick="${premium?'openBk()':'openPm()'}">
+      <span class="mi">🎯</span>
+      <span class="mt"><b>Modo Bankroll</b><small>${premium ? (bankroll.init>0||bankroll.day>0||bankroll.week>0 ? `Banca: ${bankroll.init? fmt(bankroll.init):'—'} · Límite diario: ${bankroll.day? fmt(bankroll.day):'sin límite'}` : 'Define tu banca y límites de pérdida') : 'Controla tus límites de pérdida'}</small></span>
+      ${premium? '<span class="chev">›</span>' : lock()}
+    </div>
+    <div class="menu-item" onclick="${premium?'exportCSV()':'openPm()'}">
+      <span class="mi">📤</span>
+      <span class="mt"><b>Exportar historial</b><small>Descarga tus ${bets.length} jugada${bets.length===1?'':'s'} en formato Excel (CSV)</small></span>
+      ${premium? '<span class="chev">›</span>' : lock()}
+    </div>
+    <div class="menu-item" onclick="${premium?'toggleChipSection()':'openPm()'}">
+      <span class="mi">🪙</span>
+      <span class="mt"><b>Fichas coleccionables</b><small>Cambia el diseño del logo · Actual: ${getChip().nm}</small></span>
+      ${premium? '<span class="chev">›</span>' : lock()}
+    </div>
+    <div id="chipSection" style="display:none;padding:4px 16px 16px">
+      <div class="chip-grid" id="chipGrid"></div>
+    </div>
+    <div class="menu-item" onclick="openTutorial()">
+      <span class="mi">💡</span>
+      <span class="mt"><b>Cómo funciona la app</b><small>Vuelve a ver el tutorial de bienvenida</small></span>
+      <span class="chev">›</span>
+    </div>
+  </div>
+  <p style="text-align:center;color:#55555f;font-size:11px;margin-top:18px;letter-spacing:.1em">VEGAS 50K · v3.0 · Tus datos viven solo en tu dispositivo</p>
+  `;
+}
+function toggleCurSection(){
+  const s = $('curSection');
+  const show = s.style.display==='none';
+  s.style.display = show? 'block':'none';
+  if(show) buildCurGrid('curGridMore', false);
+}
+function toggleChipSection(){
+  const s = $('chipSection');
+  const show = s.style.display==='none';
+  s.style.display = show? 'block':'none';
+  if(show) buildChipGrid();
+}
+function buildChipGrid(){
+  $('chipGrid').innerHTML = CHIPS.map((c,i)=>`
+    <div class="chip-opt ${c.id===chipSel?'sel':''}" onclick="pickChip('${c.id}')">
+      ${!c.free && !premium ? '<span class="cplock">🔒</span>':''}
+      ${chipSVG(74,'',c,'G'+i)}
+      <div class="cpn" style="color:${c.id===chipSel?'var(--gold)':'var(--muted)'}">${c.nm}</div>
+    </div>`).join('');
+}
+async function pickChip(id){
+  const c = CHIPS.find(x=>x.id===id);
+  if(!c.free && !premium){ openPm(); return; }
+  chipSel = id;
+  await sSet(K.chip, id);
+  renderChipLogo();
+  buildChipGrid();
+  renderMore();
+  toast(`🪙 Ficha: ${c.nm}`);
+  const s = $('chipSection'); if(s) s.style.display='block';
+  if($('chipGrid')) buildChipGrid();
+}
+
+/* ================= ACCIONES ================= */
+function setType(t){ entryType = t;
+  $('btnWin').className = t==='win'?'on-win':'';
+  $('btnLoss').className = t==='loss'?'on-loss':'';
+}
+function setSport(id){ captureDraft(); draft.s1=''; draft.s2=''; draft.stxt=''; sportSel = id; renderHome(); }
+function setFilter(f){ histFilter = f; renderHist(); }
+
+async function addBet(){
+  const amt = parseFloat($('inAmt').value);
+  if(!amt || amt<=0){ toast('Ingresa un monto válido'); $('inAmt').focus(); return; }
+  const sp = getSport(sportSel);
+  const match = $('inMatch').value.trim();
+  let score = '';
+  if(sp.score==='duo'){
+    const s1 = $('inS1').value, s2 = $('inS2').value;
+    if(s1!=='' && s2!=='') score = `${s1} - ${s2}`;
+  }else{
+    score = $('inSTxt').value.trim();
+  }
+  const note = $('inNote').value.trim();
+  const d = new Date();
+  bets.unshift({
+    id: Date.now(), ts: Date.now(),
+    type: entryType, sport: sportSel, amount: amt,
+    match, score, note,
+    date: d.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) + ' · ' + d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})
+  });
+  await saveBets();
+  draft = {amt:'',match:'',s1:'',s2:'',stxt:'',note:''};
+  render();
+  /* aviso bankroll al registrar pérdida */
+  if(entryType==='loss' && premium && bankroll.day>0){
+    const lossDay = lossesSince(startOfToday());
+    if(lossDay >= bankroll.day){ toast('🛑 Alcanzaste tu límite de pérdida diaria'); window.scrollTo({top:0,behavior:'smooth'}); return; }
+  }
+  toast(entryType==='win' ? '💰 Ganancia registrada' : '📉 Pérdida registrada');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function openReset(){ $('resetOverlay').classList.add('show'); }
+function closeReset(){ $('resetOverlay').classList.remove('show'); }
+async function confirmReset(){
+  bets = [];
+  try{ await window.storage.delete(K.bets); }catch(e){}
+  closeReset(); render(); toast('🎲 Banca reseteada');
+}
+
+function openDel(id){
+  pendingDelId = id;
+  const b = bets.find(x=>x.id===id);
+  $('delText').textContent = b
+    ? `Se eliminará "${b.match||getSport(b.sport).nm}" (${b.type==='win'?'+':'−'}${fmt(b.amount)}) y el profit se ajustará automáticamente.`
+    : 'Se eliminará este registro y el profit se ajustará automáticamente.';
+  $('delOverlay').classList.add('show');
+}
+function closeDel(){ pendingDelId=null; $('delOverlay').classList.remove('show'); }
+async function confirmDel(){
+  bets = bets.filter(b=>b.id!==pendingDelId);
+  await saveBets(); closeDel(); render(); toast('✔️ Registro eliminado · profit ajustado');
+}
+
+/* ============ PREMIUM · GOOGLE PLAY BILLING (compra dentro de la app) ============ */
+/* El ID del producto debe coincidir EXACTAMENTE con el que crees en Play Console:
+   Monetizar -> Productos -> Productos integrados en la aplicacion -> ID: premium_vegas50k */
+const PLAY_SKU = 'premium_vegas50k';
+let playService = null;
+
+async function initPlayBilling(){
+  if(!('getDigitalGoodsService' in window)) return false;
+  try{
+    playService = await window.getDigitalGoodsService('https://play.google.com/billing');
+    /* mostrar el precio real y localizado que Google define para el pais del usuario */
+    try{
+      const items = await playService.getDetails([PLAY_SKU]);
+      if(items && items[0] && items[0].price && $('pmBuyBtn')){
+        $('pmBuyBtn').textContent = 'DESBLOQUEAR TODO \u00B7 ' + items[0].price.value + ' ' + items[0].price.currency;
+      }
+    }catch(e){}
+    return !!playService;
+  }catch(e){ return false; }
+}
+
+/* Restaurar la compra: si el usuario ya pago (aunque reinstale la app), premium se activa solo */
+async function checkPlayEntitlements(){
+  if(!playService) return;
+  try{
+    const purchases = await playService.listPurchases();
+    if(purchases && purchases.some(pp => pp.itemId === PLAY_SKU)){
+      premium = true; await sSet(K.pm,'1'); return;
+    }
+    if(typeof playService.listPurchaseHistory === 'function'){
+      const hist = await playService.listPurchaseHistory();
+      if(hist && hist.some(pp => pp.itemId === PLAY_SKU)){
+        premium = true; await sSet(K.pm,'1');
+      }
+    }
+  }catch(e){}
+}
+
+async function buyPremiumPlay(){
+  if(!playService) await initPlayBilling();
+  if(!playService){
+    toast('Las compras solo funcionan en la app instalada desde Google Play');
+    return;
+  }
+  try{
+    const request = new PaymentRequest([{
+      supportedMethods: 'https://play.google.com/billing',
+      data: { sku: PLAY_SKU }
+    }]);
+    const response = await request.show(); /* aqui Google muestra su ventana de pago */
+    const token = response.details && response.details.purchaseToken;
+    await response.complete('success');
+    /* consume() confirma la compra ante Google para que no sea reembolsada automaticamente */
+    if(token && typeof playService.consume === 'function'){
+      try{ await playService.consume(token); }catch(e){}
+    }
+    premium = true;
+    await sSet(K.pm,'1');
+    closePm();
+    renderChipLogo();
+    render();
+    toast('\uD83D\uDC51 \u00A1Bienvenido a Premium!');
+  }catch(e){
+    if(!e || e.name !== 'AbortError') toast('No se pudo completar la compra');
+  }
+}
+
+/* ============ PREMIUM · PAGO USDT (TRC-20) ============ */
+/* ⚠️ IMPORTANTE: Reemplaza esta dirección por TU cartera USDT en la red TRON (TRC-20).
+   Ábrela en Binance/Trust Wallet → Depositar → USDT → red TRON (TRC20) y copia la dirección (empieza por "T"). */
+const WALLET_USDT = 'THb2ssBmjUbJ9DX2C3aUc6N71VsiQkHatj';
+const USDT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'; /* contrato oficial de USDT en TRON */
+const PRICE_USDT = 0.99;
+/* URL del backend de verificación (Google Apps Script). Pega aquí la URL /exec de tu implementación.
+   Si se deja vacío, la app verifica directamente contra TronScan (menos seguro). */
+const BACKEND_URL = '';
+
+function openPm(){ $('pmOverlay').classList.add('show'); }
+function closePm(){ $('pmOverlay').classList.remove('show'); }
+
+function openPay(){
+  closePm();
+  $('payWallet').textContent = WALLET_USDT;
+  $('payQR').src = 'https://api.qrserver.com/v1/create-qr-code/?size=340x340&margin=0&data=' + encodeURIComponent(WALLET_USDT);
+  $('payTx').value = '';
+  payStatus('', '');
+  $('payOverlay').classList.add('show');
+}
+function closePay(){ $('payOverlay').classList.remove('show'); }
+
+function payStatus(msg, cls){
+  const el = $('payStatus');
+  el.innerHTML = msg;
+  el.className = 'pay-status' + (msg? ' show ' + cls : '');
+}
+async function copyWallet(){
+  try{
+    await navigator.clipboard.writeText(WALLET_USDT);
+    toast('📋 Dirección copiada');
+  }catch(e){
+    /* fallback para webviews sin clipboard API */
+    const r = document.createRange(); r.selectNode($('payWallet'));
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    document.execCommand('copy'); sel.removeAllRanges();
+    toast('📋 Dirección copiada');
+  }
+}
+
+async function verifyPayment(){
+  const tx = $('payTx').value.trim();
+  if(!/^[0-9a-fA-F]{64}$/.test(tx)){
+    payStatus('❌ Ese no parece un TxID válido. Debe ser un hash de 64 caracteres. Cópialo desde el detalle de la transacción en tu wallet.', 'err');
+    return;
+  }
+  /* evitar reutilizar el mismo hash en este dispositivo */
+  const used = await sGet(K.tx);
+  if(used && JSON.parse(used).includes(tx.toLowerCase())){
+    payStatus('❌ Este TxID ya fue utilizado.', 'err');
+    return;
+  }
+  const btn = $('payVerifyBtn');
+  btn.disabled = true;
+  payStatus('⏳ Verificando el pago en la blockchain… esto tarda unos segundos. Si acabas de enviar, espera ~1 minuto a que se confirme.', 'wait');
+
+  /* ---- Verificación centralizada (backend) ---- */
+  if(BACKEND_URL){
+    try{
+      const res = await fetch(BACKEND_URL + '?tx=' + encodeURIComponent(tx.toLowerCase()));
+      const d = await res.json();
+      const MSG = {
+        used:        '❌ Este TxID ya fue utilizado para activar Premium.',
+        not_found:   '❌ Transacción no encontrada. Verifica el TxID o espera un minuto a que la red la registre.',
+        unconfirmed: '⏳ La transacción existe pero aún no está confirmada. Espera 1-2 minutos y vuelve a verificar.',
+        failed:      '❌ La transacción falló en la red.',
+        wrong_dest:  '❌ La transferencia no fue enviada a la cartera de la app.',
+        low_amount:  '❌ El monto enviado es menor a 0.99 USDT.',
+        no_usdt:     '❌ Esta transacción no contiene una transferencia de USDT (TRC-20). Asegúrate de usar la red TRON.',
+        error:       '❌ Error del servidor de verificación. Inténtalo de nuevo en un momento.'
+      };
+      if(d.status === 'ok'){
+        await activatePremium(tx);
+      }else{
+        payStatus(MSG[d.status] || MSG.error, d.status==='unconfirmed' ? 'wait' : 'err');
+        btn.disabled = false;
+      }
+    }catch(e){
+      payStatus('❌ No se pudo contactar el servidor de verificación. Revisa tu conexión e inténtalo de nuevo.', 'err');
+      btn.disabled = false;
+    }
+    return;
+  }
+
+  /* ---- Fallback: verificación directa contra TronScan ---- */
+  try{
+    const res = await fetch('https://apilist.tronscanapi.com/api/transaction-info?hash=' + tx);
+    if(!res.ok) throw new Error('network');
+    const d = await res.json();
+    if(!d || !d.hash){
+      payStatus('❌ Transacción no encontrada. Verifica el TxID o espera un minuto a que la red la registre.', 'err');
+      btn.disabled = false; return;
+    }
+    if(d.confirmed === false){
+      payStatus('⏳ La transacción existe pero aún no está confirmada. Espera 1-2 minutos y vuelve a verificar.', 'wait');
+      btn.disabled = false; return;
+    }
+    if(d.contractRet && d.contractRet !== 'SUCCESS'){
+      payStatus('❌ La transacción falló en la red (' + esc(d.contractRet) + ').', 'err');
+      btn.disabled = false; return;
+    }
+    /* buscar la transferencia USDT dentro de la transacción */
+    let transfers = [];
+    if(Array.isArray(d.trc20TransferInfo)) transfers = d.trc20TransferInfo;
+    else if(d.tokenTransferInfo) transfers = [d.tokenTransferInfo];
+    const valid = transfers.find(t =>
+      t.contract_address === USDT_CONTRACT &&
+      t.to_address === WALLET_USDT &&
+      (parseFloat(t.amount_str) / Math.pow(10, t.decimals||6)) >= PRICE_USDT
+    );
+    if(!valid){
+      const wrongDest = transfers.find(t => t.contract_address === USDT_CONTRACT && t.to_address !== WALLET_USDT);
+      const lowAmt = transfers.find(t => t.contract_address === USDT_CONTRACT && t.to_address === WALLET_USDT);
+      if(wrongDest) payStatus('❌ La transferencia no fue enviada a la cartera de la app. Verifica la dirección de destino.', 'err');
+      else if(lowAmt) payStatus('❌ El monto enviado es menor a 0.99 USDT.', 'err');
+      else payStatus('❌ Esta transacción no contiene una transferencia de USDT (TRC-20). Asegúrate de usar la red TRON.', 'err');
+      btn.disabled = false; return;
+    }
+    /* ✅ pago verificado */
+    await activatePremium(tx);
+  }catch(e){
+    payStatus('❌ No se pudo consultar la red (revisa tu conexión a internet) e inténtalo de nuevo.', 'err');
+    btn.disabled = false;
+  }
+}
+
+async function activatePremium(tx){
+  const used = await sGet(K.tx);
+  const usedArr = used? JSON.parse(used) : [];
+  usedArr.push(tx.toLowerCase());
+  await sSet(K.tx, JSON.stringify(usedArr));
+  premium = true;
+  await sSet(K.pm,'1');
+  payStatus('✅ <b>¡Pago verificado en la blockchain!</b> Premium activado para siempre. 👑', 'ok');
+  setTimeout(()=>{
+    closePay();
+    renderChipLogo();
+    render();
+    toast('👑 ¡Bienvenido a Premium!');
+  }, 1600);
+}
+
+/* bankroll */
+function openBk(){
+  $('bkInit').value = bankroll.init||'';
+  $('bkDay').value = bankroll.day||'';
+  $('bkWeek').value = bankroll.week||'';
+  $('bkOverlay').classList.add('show');
+}
+function closeBk(){ $('bkOverlay').classList.remove('show'); }
+async function saveBk(){
+  bankroll = {
+    init: parseFloat($('bkInit').value)||0,
+    day: parseFloat($('bkDay').value)||0,
+    week: parseFloat($('bkWeek').value)||0
+  };
+  await sSet(K.bank, JSON.stringify(bankroll));
+  closeBk(); render(); toast('🎯 Bankroll configurado');
+}
+
+/* exportar CSV */
+function exportCSV(){
+  if(!bets.length){ toast('No hay jugadas para exportar'); return; }
+  const q = v => '"' + String(v==null?'':v).replace(/"/g,'""') + '"';
+  const rows = [['Fecha','Tipo','Deporte','Partido/Evento','Marcador','Nota',`Monto (${cur().code})`,'Efecto en profit']];
+  bets.forEach(b=>{
+    const sp = getSport(b.sport);
+    rows.push([b.date, b.type==='win'?'Ganancia':'Pérdida', sp.nm, b.match||'', b.score||'', b.note||'', b.amount, (b.type==='win'?'+':'-')+b.amount]);
+  });
+  const {profit,totalW,totalL} = profitData();
+  rows.push([]); rows.push(['RESUMEN']);
+  rows.push(['Total ganado','', '', '', '', '', totalW]);
+  rows.push(['Total perdido','', '', '', '', '', totalL]);
+  rows.push(['PROFIT','', '', '', '', '', profit]);
+  const csv = '\uFEFF' + rows.map(r=> r.map(q).join(';')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vegas50k-historial.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+  toast('📤 Historial exportado');
+}
+
+/* tutorial */
+function openTutorial(){ $('tutOverlay').classList.add('show'); }
+function closeTutorial(){ $('tutOverlay').classList.remove('show'); }
+
+/* toast */
+let toastTimer;
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+loadData();
+</script>
+</body>
+</html>
