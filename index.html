@@ -42,8 +42,6 @@ body{
   padding-bottom:96px;
 }
 .wrap{max-width:520px;margin:0 auto;padding:20px 16px}
-
-/* ===== HEADER / CHIP ===== */
 header{display:flex;flex-direction:column;align-items:center;padding:14px 0 6px}
 .chip{width:130px;height:130px;filter:drop-shadow(0 10px 24px rgba(0,0,0,.6));animation:chipIn .8s cubic-bezier(.2,.9,.3,1.2) both;cursor:pointer}
 .chip:active{filter:drop-shadow(0 4px 12px rgba(212,175,55,.5))}
@@ -59,8 +57,6 @@ header{display:flex;flex-direction:column;align-items:center;padding:14px 0 6px}
   border:1px solid var(--gold);color:var(--gold);border-radius:20px;
   padding:4px 13px;font-size:10px;font-weight:700;letter-spacing:.22em;
 }
-
-/* ===== PROFIT ===== */
 .profit-card{
   margin-top:20px;border:1px solid var(--line);border-radius:16px;
   background:linear-gradient(180deg,var(--panel2),var(--panel));
@@ -84,8 +80,6 @@ header{display:flex;flex-direction:column;align-items:center;padding:14px 0 6px}
 .stat b{display:block;font-family:'IBM Plex Mono',monospace;font-size:15px;font-variant-numeric:tabular-nums}
 .stat.win b{color:var(--win)} .stat.loss b{color:var(--loss)}
 .stat small{font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
-
-/* bankroll banner */
 .bank-card{margin-top:12px;border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px 16px}
 .bank-top{display:flex;justify-content:space-between;align-items:baseline;font-size:12px}
 .bank-top b{font-family:'IBM Plex Mono';font-size:14px}
@@ -99,8 +93,6 @@ header{display:flex;flex-direction:column;align-items:center;padding:14px 0 6px}
   border-radius:12px;padding:11px 14px;font-size:13px;line-height:1.45;font-weight:500;
 }
 .bank-alert.soft{border-color:#e67e22;background:rgba(230,126,34,.1);color:#f5c98f}
-
-/* ===== FORM ===== */
 .form-card{margin-top:16px;border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:16px}
 .form-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.18em;color:var(--gold);margin-bottom:12px}
 .toggle{display:flex;gap:8px;margin-bottom:12px}
@@ -141,8 +133,6 @@ textarea{resize:none;height:70px}
   transition:transform .12s;
 }
 .add-btn:active{transform:scale(.98)}
-
-/* ===== HISTORY ===== */
 .hist-head{display:flex;justify-content:space-between;align-items:center;margin:6px 4px 12px}
 .hist-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.18em;color:var(--ivory)}
 .reset-btn{
@@ -184,8 +174,6 @@ textarea{resize:none;height:70px}
   color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.1em;cursor:pointer;text-transform:uppercase;transition:.2s;
 }
 .filters button.sel{border-color:var(--gold);color:var(--gold);background:rgba(212,175,55,.1)}
-
-/* ===== STATS PRO ===== */
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
 .stat-box{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px;text-align:center}
 .stat-box .v{font-family:'IBM Plex Mono';font-weight:700;font-size:19px;margin-top:2px}
@@ -209,8 +197,6 @@ textarea{resize:none;height:70px}
 }
 .lock-overlay .lk{font-size:34px}
 .lock-overlay p{font-size:13.5px;color:var(--ivory);max-width:260px;line-height:1.5}
-
-/* ===== MÁS / AJUSTES ===== */
 .menu-card{border:1px solid var(--line);border-radius:16px;background:var(--panel);margin-top:14px;overflow:hidden}
 .menu-item{
   display:flex;align-items:center;gap:13px;padding:15px 16px;cursor:pointer;
@@ -251,8 +237,6 @@ textarea{resize:none;height:70px}
 .chip-opt .cpn{font-size:11px;font-weight:700;letter-spacing:.1em;margin-top:7px;text-transform:uppercase}
 .chip-opt.sel{border-color:var(--gold);background:rgba(212,175,55,.1)}
 .chip-opt .cplock{position:absolute;top:8px;right:10px;font-size:14px}
-
-/* ===== NAV ===== */
 .nav{
   position:fixed;bottom:0;left:0;right:0;z-index:40;
   background:rgba(13,13,17,.92);backdrop-filter:blur(12px);
@@ -268,8 +252,6 @@ textarea{resize:none;height:70px}
 .nav button .nlbl{font-size:9.5px;letter-spacing:.16em;font-weight:700;text-transform:uppercase}
 .nav button.sel{color:var(--gold)}
 .nav button.sel .nico{transform:translateY(-2px)}
-
-/* ===== MODALES ===== */
 .overlay{
   position:fixed;inset:0;background:rgba(5,5,8,.85);backdrop-filter:blur(4px);
   display:none;align-items:center;justify-content:center;z-index:50;padding:20px;
@@ -303,29 +285,6 @@ textarea{resize:none;height:70px}
 .pm-feat .pf{flex:0 0 34px;height:34px;border-radius:9px;background:rgba(212,175,55,.12);border:1px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:16px}
 .pm-feat p{margin:0;font-size:13px;line-height:1.4;color:var(--ivory)}
 .pm-feat p small{display:block;color:var(--muted);font-size:11.5px}
-/* pago USDT */
-.pay-net{display:inline-block;background:rgba(61,220,132,.12);border:1px solid var(--win);color:var(--win);border-radius:16px;padding:4px 14px;font-size:11px;font-weight:700;letter-spacing:.14em;margin-bottom:12px}
-.pay-qr{width:170px;height:170px;border-radius:14px;background:#fff;padding:8px;margin:0 auto 12px;display:block}
-.wallet-box{
-  display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--gold-dim);
-  border-radius:11px;padding:10px 12px;margin-bottom:12px;
-}
-.wallet-box code{
-  flex:1;font-family:'IBM Plex Mono';font-size:11.5px;color:var(--ivory);
-  word-break:break-all;text-align:left;line-height:1.4;
-}
-.copy-btn{
-  flex:0 0 auto;background:var(--gold);border:none;color:#1a1405;font-weight:700;
-  font-size:11px;padding:8px 12px;border-radius:8px;cursor:pointer;letter-spacing:.06em;
-}
-.pay-amount{font-family:'IBM Plex Mono';font-weight:700;font-size:26px;color:var(--gold);margin-bottom:2px}
-.pay-status{border-radius:11px;padding:11px 13px;font-size:13px;line-height:1.45;margin-top:12px;display:none;text-align:left}
-.pay-status.show{display:block}
-.pay-status.ok{background:rgba(61,220,132,.1);border:1px solid var(--win);color:#bfe8d2}
-.pay-status.err{background:rgba(255,77,94,.1);border:1px solid var(--loss);color:#ffb3ba}
-.pay-status.wait{background:rgba(212,175,55,.1);border:1px solid var(--gold-dim);color:#e8d9a0}
-.pay-steps{text-align:left;font-size:12.5px;color:var(--muted);line-height:1.6;margin:0 0 12px;padding-left:18px}
-.pay-steps b{color:var(--ivory)}
 .toast{
   position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(140px);
   background:var(--panel2);border:1px solid var(--gold);color:var(--ivory);
@@ -351,7 +310,6 @@ textarea{resize:none;height:70px}
   <div id="app"><div class="loading">Cargando banca…</div></div>
 </div>
 
-<!-- MENÚ INFERIOR -->
 <nav class="nav">
   <div class="nav-inner">
     <button id="nav-home" class="sel" onclick="goTab('home')"><span class="nico">🎰</span><span class="nlbl">Registrar</span></button>
@@ -361,7 +319,6 @@ textarea{resize:none;height:70px}
   </div>
 </nav>
 
-<!-- MODAL SELECCIÓN DE MONEDA (primer arranque) -->
 <div class="overlay" id="curOverlay">
   <div class="modal">
     <div id="curChip"></div>
@@ -374,7 +331,6 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- MODAL RESET -->
 <div class="overlay" id="resetOverlay">
   <div class="modal">
     <div class="chip-mini" id="resetChip"></div>
@@ -387,7 +343,6 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- MODAL BORRAR ENTRADA -->
 <div class="overlay" id="delOverlay">
   <div class="modal">
     <h3 class="ivory">¿ELIMINAR REGISTRO?</h3>
@@ -399,7 +354,6 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- MODAL TUTORIAL -->
 <div class="overlay" id="tutOverlay">
   <div class="modal">
     <div class="chip-mini" id="tutChip"></div>
@@ -417,7 +371,6 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- MODAL PREMIUM -->
 <div class="overlay" id="pmOverlay">
   <div class="modal">
     <div class="chip-mini" id="pmChip"></div>
@@ -434,34 +387,6 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- MODAL PAGO USDT -->
-<div class="overlay" id="payOverlay">
-  <div class="modal">
-    <h3 class="gold">💳 PAGO CON USDT</h3>
-    <div class="pay-net">RED: TRON (TRC-20)</div>
-    <div class="pay-amount">0.99 USDT</div>
-    <p style="margin:2px 0 12px;font-size:12px">Envía exactamente este monto (o más) a la siguiente cartera:</p>
-    <img class="pay-qr" id="payQR" alt="QR de la cartera USDT">
-    <div class="wallet-box">
-      <code id="payWallet"></code>
-      <button class="copy-btn" onclick="copyWallet()">COPIAR</button>
-    </div>
-    <ol class="pay-steps">
-      <li>Abre tu wallet (Binance, Trust Wallet, OKX…).</li>
-      <li>Envía <b>0.99 USDT</b> por la red <b>TRC-20</b> a esa dirección.</li>
-      <li>Copia el <b>hash de la transacción (TxID)</b> y pégalo abajo.</li>
-    </ol>
-    <label style="text-align:left">Hash de la transacción (TxID)</label>
-    <input class="mono" id="payTx" type="text" placeholder="Ej: 7f3a9c…" autocomplete="off" spellcheck="false">
-    <div class="pay-status" id="payStatus"></div>
-    <div class="modal-btns" style="margin-top:16px;flex-direction:column">
-      <button class="btn-gold" id="payVerifyBtn" onclick="verifyPayment()">VERIFICAR PAGO ✓</button>
-      <button class="btn-cancel" onclick="closePay()">Volver</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL BANKROLL CONFIG -->
 <div class="overlay" id="bkOverlay">
   <div class="modal" style="text-align:left">
     <h3 class="gold" style="text-align:center">🎯 MODO BANKROLL</h3>
@@ -527,7 +452,6 @@ const CURRENCIES = {
   ETH: {flag:'⟠',  code:'ETH',  name:'Ethereum',           sym:'Ξ',    dec:6, loc:'en-US', suf:' ETH'},
   USDC:{flag:'🔵', code:'USDC', name:'USD Coin',           sym:'',     dec:2, loc:'en-US', suf:' USDC'}
 };
-/* Fichas coleccionables: [cara, franjas, texto, denominación, acento] */
 const CHIPS = [
   {id:'classic', nm:'Clásica 50K',  free:true,  face:'#0d0d10', spot:'#f2efe6', txt:'#f2efe6', denom:'50K$',  sub:'HIGH ROLLER', accent:'#d4af37'},
   {id:'gold',    nm:'Dorada 100K',  free:false, face:'#2b2008', spot:'#ffd700', txt:'#ffe9a8', denom:'100K$', sub:'GOLDEN CLUB', accent:'#ffd700'},
@@ -536,12 +460,11 @@ const CHIPS = [
   {id:'sapphire',nm:'Zafiro 500K',  free:false, face:'#081a3a', spot:'#5aa2ff', txt:'#d3e5ff', denom:'500K$', sub:'WHALE ONLY',  accent:'#5aa2ff'}
 ];
 
-const K = { bets:'vegas50k-bets', tut:'vegas50k-tutorial-visto', cur:'vegas50k-moneda', pm:'vegas50k-premium', bank:'vegas50k-bankroll', chip:'vegas50k-ficha', tx:'vegas50k-tx-usadas' };
+const K = { bets:'vegas50k-bets', tut:'vegas50k-tutorial-visto', cur:'vegas50k-moneda', pm:'vegas50k-premium', bank:'vegas50k-bankroll', chip:'vegas50k-ficha' };
 
-/* ================= ESTADO ================= */
 let bets = [];
-let currency = null;          /* código, ej 'COP' */
-let curTemp = 'COP';          /* selección temporal en el modal */
+let currency = null;
+let curTemp = 'COP';
 let premium = false;
 let bankroll = {init:0, day:0, week:0};
 let chipSel = 'classic';
@@ -565,7 +488,6 @@ function fmt(n){
 }
 function esc(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-/* ================= FICHA SVG ================= */
 function chipSVG(size, cls, chipDef, idSuffix){
   const c = chipDef || getChip();
   let spots = '';
@@ -603,15 +525,15 @@ function renderChipLogo(){
     chip.classList.remove('spin'); void chip.offsetWidth; chip.classList.add('spin');
   });
   $('badgeHolder').innerHTML = premium ? `<span class="premium-badge">👑 PREMIUM</span>` : '';
-  /* fichas en modales */
   $('resetChip').innerHTML = chipSVG(64,'',null,'R');
   $('tutChip').innerHTML = `<div class="chip-mini">${chipSVG(64,'',null,'T')}</div>`;
   $('pmChip').innerHTML = `<div class="chip-mini">${chipSVG(64,'',CHIPS[1],'P')}</div>`;
 }
 
-/* ================= STORAGE ================= */
-async function sGet(key){ try{ const r = await window.storage.get(key); return r? r.value : null; }catch(e){ return null; } }
-async function sSet(key,val){ try{ await window.storage.set(key,val); }catch(e){ toast('⚠️ No se pudo guardar'); } }
+/* Guardado real en el navegador (localStorage) — funciona en cualquier sitio publicado */
+async function sGet(key){ try{ const v = window.localStorage.getItem(key); return v; }catch(e){ return null; } }
+async function sSet(key,val){ try{ window.localStorage.setItem(key,val); }catch(e){ toast('⚠️ No se pudo guardar'); } }
+async function sDelete(key){ try{ window.localStorage.removeItem(key); }catch(e){} }
 
 async function loadData(){
   const b = await sGet(K.bets);   if(b) try{ bets = JSON.parse(b); }catch(e){}
@@ -628,7 +550,6 @@ async function loadData(){
   render();
 
   if(!currency){
-    /* primer arranque: elegir moneda */
     buildCurGrid('curGrid', true);
     $('curChip').innerHTML = `<div class="chip-mini">${chipSVG(64,'',null,'C')}</div>`;
     $('curOverlay').classList.add('show');
@@ -639,7 +560,6 @@ async function loadData(){
 }
 const saveBets = () => sSet(K.bets, JSON.stringify(bets));
 
-/* ================= MONEDA ================= */
 function buildCurGrid(elId, isModal){
   $(elId).innerHTML = Object.values(CURRENCIES).map(c=>`
     <div class="cur-opt ${((isModal?curTemp:currency)===c.code)?'sel':''}" onclick="pickCur('${c.code}',${isModal})">
@@ -661,7 +581,6 @@ async function confirmCurrency(){
   if(!t){ openTutorial(); await sSet(K.tut,'1'); }
 }
 
-/* ================= NAV ================= */
 function goTab(t){
   if(tab==='home') captureDraft();
   tab = t;
@@ -678,7 +597,6 @@ function captureDraft(){
   };
 }
 
-/* ================= CÁLCULOS ================= */
 function profitData(){
   const profit = bets.reduce((s,b)=> s + (b.type==='win'? b.amount : -b.amount), 0);
   const totalW = bets.filter(b=>b.type==='win').reduce((s,b)=>s+b.amount,0);
@@ -692,7 +610,6 @@ function lossesSince(msAgoStart){
 function startOfToday(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
 function startOfWeek(){ return Date.now() - 7*24*3600*1000; }
 
-/* ================= COMPONENTES ================= */
 function profitCard(){
   const {profit,totalW,totalL} = profitData();
   return `
@@ -716,7 +633,7 @@ function bankrollCard(){
     const cls = pct>=90? '' : pct>=50? 'warn' : 'danger';
     html += `
     <div class="bank-card">
-      <div class="bank-top"><small>🎯 Banca actual</small><b class="${banca>=bankroll.init?'':''}" style="color:${banca>=bankroll.init?'var(--win)':'var(--loss)'}">${fmt(banca)}</b></div>
+      <div class="bank-top"><small>🎯 Banca actual</small><b style="color:${banca>=bankroll.init?'var(--win)':'var(--loss)'}">${fmt(banca)}</b></div>
       <div class="bank-bar"><div class="bank-fill ${cls}" style="width:${pct}%"></div></div>
       <div class="bank-top" style="margin-top:6px"><small>Inicial: ${fmt(bankroll.init)}</small><small>${pct.toFixed(0)}%</small></div>
     </div>`;
@@ -750,7 +667,6 @@ function entryHTML(b){
   </div>`;
 }
 
-/* ================= VISTAS ================= */
 function render(){
   if(tab==='home') renderHome();
   else if(tab==='hist') renderHist();
@@ -823,19 +739,15 @@ function renderHist(){
   `;
 }
 
-/* ---- ESTADÍSTICAS PRO ---- */
 function statsContent(){
   const {profit,totalW,totalL} = profitData();
   const wins = bets.filter(b=>b.type==='win').length;
   const wr = bets.length? Math.round(wins/bets.length*100) : 0;
-  /* racha actual */
   let streak = 0, streakType = null;
   for(const b of bets){ if(streakType===null) streakType=b.type; if(b.type===streakType) streak++; else break; }
-  /* mejor / peor */
   const best = bets.filter(b=>b.type==='win').reduce((m,b)=> b.amount>m? b.amount:m, 0);
   const worst = bets.filter(b=>b.type==='loss').reduce((m,b)=> b.amount>m? b.amount:m, 0);
   const avg = bets.length? (totalW+totalL)/bets.length : 0;
-  /* gráfica: profit acumulado (cronológico) */
   const chrono = [...bets].sort((a,b)=> ts(a)-ts(b));
   let acc = 0; const pts = [0];
   chrono.forEach(b=>{ acc += (b.type==='win'? b.amount : -b.amount); pts.push(acc); });
@@ -857,7 +769,6 @@ function statsContent(){
       <span>Inicio</span><span style="font-family:'IBM Plex Mono';color:${lastColor}">${fmt(acc)}</span>
     </div>`
     : `<div class="empty" style="padding:22px"><b>SIN DATOS</b>Registra jugadas para ver tu curva de profit.</div>`;
-  /* win rate por deporte */
   const bySport = {};
   bets.forEach(b=>{
     if(!bySport[b.sport]) bySport[b.sport]={w:0,t:0,net:0};
@@ -929,12 +840,11 @@ function renderStats(){
   }
 }
 
-/* ---- MÁS ---- */
 function renderMore(){
   const lock = () => premium ? '' : `<span class="lock">🔒 Premium</span>`;
   app.innerHTML = `
   ${premium
-    ? `<div class="premium-cta" style="cursor:default"><h4>👑 PREMIUM ACTIVO</h4><p>Gracias por apoyar Vegas 50K. Tienes todas las funciones desbloqueadas para siempre.</p></div>`
+    ? `<div class="premium-cta" style="cursor:default"><h4>👑 PREMIUM ACTIVO</h4><p>Esta es la edición completa de Vegas 50K: todas las funciones desbloqueadas para siempre.</p></div>`
     : `<div class="premium-cta" onclick="openPm()">
         <h4>👑 DESBLOQUEA TODO CON PREMIUM</h4>
         <p>Estadísticas Pro · Modo Bankroll · Exportar a Excel · Fichas coleccionables<br>Todo incluido en un solo pago</p>
@@ -974,7 +884,7 @@ function renderMore(){
       <span class="chev">›</span>
     </div>
   </div>
-  <p style="text-align:center;color:#55555f;font-size:11px;margin-top:18px;letter-spacing:.1em">VEGAS 50K · v3.0 · Tus datos viven solo en tu dispositivo</p>
+  <p style="text-align:center;color:#55555f;font-size:11px;margin-top:18px;letter-spacing:.1em">VEGAS 50K · v3.1 · Tus datos viven solo en tu dispositivo</p>
   `;
 }
 function toggleCurSection(){
@@ -1010,7 +920,6 @@ async function pickChip(id){
   if($('chipGrid')) buildChipGrid();
 }
 
-/* ================= ACCIONES ================= */
 function setType(t){ entryType = t;
   $('btnWin').className = t==='win'?'on-win':'';
   $('btnLoss').className = t==='loss'?'on-loss':'';
@@ -1041,7 +950,6 @@ async function addBet(){
   await saveBets();
   draft = {amt:'',match:'',s1:'',s2:'',stxt:'',note:''};
   render();
-  /* aviso bankroll al registrar pérdida */
   if(entryType==='loss' && premium && bankroll.day>0){
     const lossDay = lossesSince(startOfToday());
     if(lossDay >= bankroll.day){ toast('🛑 Alcanzaste tu límite de pérdida diaria'); window.scrollTo({top:0,behavior:'smooth'}); return; }
@@ -1054,7 +962,7 @@ function openReset(){ $('resetOverlay').classList.add('show'); }
 function closeReset(){ $('resetOverlay').classList.remove('show'); }
 async function confirmReset(){
   bets = [];
-  try{ await window.storage.delete(K.bets); }catch(e){}
+  await sDelete(K.bets);
   closeReset(); render(); toast('🎲 Banca reseteada');
 }
 
@@ -1073,27 +981,26 @@ async function confirmDel(){
 }
 
 /* ============ PREMIUM · GOOGLE PLAY BILLING (compra dentro de la app) ============ */
-/* El ID del producto debe coincidir EXACTAMENTE con el que crees en Play Console:
-   Monetizar -> Productos -> Productos integrados en la aplicacion -> ID: premium_vegas50k */
 const PLAY_SKU = 'premium_vegas50k';
 let playService = null;
+
+function openPm(){ $('pmOverlay').classList.add('show'); }
+function closePm(){ $('pmOverlay').classList.remove('show'); }
 
 async function initPlayBilling(){
   if(!('getDigitalGoodsService' in window)) return false;
   try{
     playService = await window.getDigitalGoodsService('https://play.google.com/billing');
-    /* mostrar el precio real y localizado que Google define para el pais del usuario */
     try{
       const items = await playService.getDetails([PLAY_SKU]);
       if(items && items[0] && items[0].price && $('pmBuyBtn')){
-        $('pmBuyBtn').textContent = 'DESBLOQUEAR TODO \u00B7 ' + items[0].price.value + ' ' + items[0].price.currency;
+        $('pmBuyBtn').textContent = 'DESBLOQUEAR TODO · ' + items[0].price.value + ' ' + items[0].price.currency;
       }
     }catch(e){}
     return !!playService;
   }catch(e){ return false; }
 }
 
-/* Restaurar la compra: si el usuario ya pago (aunque reinstale la app), premium se activa solo */
 async function checkPlayEntitlements(){
   if(!playService) return;
   try{
@@ -1121,10 +1028,9 @@ async function buyPremiumPlay(){
       supportedMethods: 'https://play.google.com/billing',
       data: { sku: PLAY_SKU }
     }]);
-    const response = await request.show(); /* aqui Google muestra su ventana de pago */
+    const response = await request.show();
     const token = response.details && response.details.purchaseToken;
     await response.complete('success');
-    /* consume() confirma la compra ante Google para que no sea reembolsada automaticamente */
     if(token && typeof playService.consume === 'function'){
       try{ await playService.consume(token); }catch(e){}
     }
@@ -1133,156 +1039,12 @@ async function buyPremiumPlay(){
     closePm();
     renderChipLogo();
     render();
-    toast('\uD83D\uDC51 \u00A1Bienvenido a Premium!');
+    toast('👑 ¡Bienvenido a Premium!');
   }catch(e){
     if(!e || e.name !== 'AbortError') toast('No se pudo completar la compra');
   }
 }
 
-/* ============ PREMIUM · PAGO USDT (TRC-20) ============ */
-/* ⚠️ IMPORTANTE: Reemplaza esta dirección por TU cartera USDT en la red TRON (TRC-20).
-   Ábrela en Binance/Trust Wallet → Depositar → USDT → red TRON (TRC20) y copia la dirección (empieza por "T"). */
-const WALLET_USDT = 'THb2ssBmjUbJ9DX2C3aUc6N71VsiQkHatj';
-const USDT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'; /* contrato oficial de USDT en TRON */
-const PRICE_USDT = 0.99;
-/* URL del backend de verificación (Google Apps Script). Pega aquí la URL /exec de tu implementación.
-   Si se deja vacío, la app verifica directamente contra TronScan (menos seguro). */
-const BACKEND_URL = '';
-
-function openPm(){ $('pmOverlay').classList.add('show'); }
-function closePm(){ $('pmOverlay').classList.remove('show'); }
-
-function openPay(){
-  closePm();
-  $('payWallet').textContent = WALLET_USDT;
-  $('payQR').src = 'https://api.qrserver.com/v1/create-qr-code/?size=340x340&margin=0&data=' + encodeURIComponent(WALLET_USDT);
-  $('payTx').value = '';
-  payStatus('', '');
-  $('payOverlay').classList.add('show');
-}
-function closePay(){ $('payOverlay').classList.remove('show'); }
-
-function payStatus(msg, cls){
-  const el = $('payStatus');
-  el.innerHTML = msg;
-  el.className = 'pay-status' + (msg? ' show ' + cls : '');
-}
-async function copyWallet(){
-  try{
-    await navigator.clipboard.writeText(WALLET_USDT);
-    toast('📋 Dirección copiada');
-  }catch(e){
-    /* fallback para webviews sin clipboard API */
-    const r = document.createRange(); r.selectNode($('payWallet'));
-    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
-    document.execCommand('copy'); sel.removeAllRanges();
-    toast('📋 Dirección copiada');
-  }
-}
-
-async function verifyPayment(){
-  const tx = $('payTx').value.trim();
-  if(!/^[0-9a-fA-F]{64}$/.test(tx)){
-    payStatus('❌ Ese no parece un TxID válido. Debe ser un hash de 64 caracteres. Cópialo desde el detalle de la transacción en tu wallet.', 'err');
-    return;
-  }
-  /* evitar reutilizar el mismo hash en este dispositivo */
-  const used = await sGet(K.tx);
-  if(used && JSON.parse(used).includes(tx.toLowerCase())){
-    payStatus('❌ Este TxID ya fue utilizado.', 'err');
-    return;
-  }
-  const btn = $('payVerifyBtn');
-  btn.disabled = true;
-  payStatus('⏳ Verificando el pago en la blockchain… esto tarda unos segundos. Si acabas de enviar, espera ~1 minuto a que se confirme.', 'wait');
-
-  /* ---- Verificación centralizada (backend) ---- */
-  if(BACKEND_URL){
-    try{
-      const res = await fetch(BACKEND_URL + '?tx=' + encodeURIComponent(tx.toLowerCase()));
-      const d = await res.json();
-      const MSG = {
-        used:        '❌ Este TxID ya fue utilizado para activar Premium.',
-        not_found:   '❌ Transacción no encontrada. Verifica el TxID o espera un minuto a que la red la registre.',
-        unconfirmed: '⏳ La transacción existe pero aún no está confirmada. Espera 1-2 minutos y vuelve a verificar.',
-        failed:      '❌ La transacción falló en la red.',
-        wrong_dest:  '❌ La transferencia no fue enviada a la cartera de la app.',
-        low_amount:  '❌ El monto enviado es menor a 0.99 USDT.',
-        no_usdt:     '❌ Esta transacción no contiene una transferencia de USDT (TRC-20). Asegúrate de usar la red TRON.',
-        error:       '❌ Error del servidor de verificación. Inténtalo de nuevo en un momento.'
-      };
-      if(d.status === 'ok'){
-        await activatePremium(tx);
-      }else{
-        payStatus(MSG[d.status] || MSG.error, d.status==='unconfirmed' ? 'wait' : 'err');
-        btn.disabled = false;
-      }
-    }catch(e){
-      payStatus('❌ No se pudo contactar el servidor de verificación. Revisa tu conexión e inténtalo de nuevo.', 'err');
-      btn.disabled = false;
-    }
-    return;
-  }
-
-  /* ---- Fallback: verificación directa contra TronScan ---- */
-  try{
-    const res = await fetch('https://apilist.tronscanapi.com/api/transaction-info?hash=' + tx);
-    if(!res.ok) throw new Error('network');
-    const d = await res.json();
-    if(!d || !d.hash){
-      payStatus('❌ Transacción no encontrada. Verifica el TxID o espera un minuto a que la red la registre.', 'err');
-      btn.disabled = false; return;
-    }
-    if(d.confirmed === false){
-      payStatus('⏳ La transacción existe pero aún no está confirmada. Espera 1-2 minutos y vuelve a verificar.', 'wait');
-      btn.disabled = false; return;
-    }
-    if(d.contractRet && d.contractRet !== 'SUCCESS'){
-      payStatus('❌ La transacción falló en la red (' + esc(d.contractRet) + ').', 'err');
-      btn.disabled = false; return;
-    }
-    /* buscar la transferencia USDT dentro de la transacción */
-    let transfers = [];
-    if(Array.isArray(d.trc20TransferInfo)) transfers = d.trc20TransferInfo;
-    else if(d.tokenTransferInfo) transfers = [d.tokenTransferInfo];
-    const valid = transfers.find(t =>
-      t.contract_address === USDT_CONTRACT &&
-      t.to_address === WALLET_USDT &&
-      (parseFloat(t.amount_str) / Math.pow(10, t.decimals||6)) >= PRICE_USDT
-    );
-    if(!valid){
-      const wrongDest = transfers.find(t => t.contract_address === USDT_CONTRACT && t.to_address !== WALLET_USDT);
-      const lowAmt = transfers.find(t => t.contract_address === USDT_CONTRACT && t.to_address === WALLET_USDT);
-      if(wrongDest) payStatus('❌ La transferencia no fue enviada a la cartera de la app. Verifica la dirección de destino.', 'err');
-      else if(lowAmt) payStatus('❌ El monto enviado es menor a 0.99 USDT.', 'err');
-      else payStatus('❌ Esta transacción no contiene una transferencia de USDT (TRC-20). Asegúrate de usar la red TRON.', 'err');
-      btn.disabled = false; return;
-    }
-    /* ✅ pago verificado */
-    await activatePremium(tx);
-  }catch(e){
-    payStatus('❌ No se pudo consultar la red (revisa tu conexión a internet) e inténtalo de nuevo.', 'err');
-    btn.disabled = false;
-  }
-}
-
-async function activatePremium(tx){
-  const used = await sGet(K.tx);
-  const usedArr = used? JSON.parse(used) : [];
-  usedArr.push(tx.toLowerCase());
-  await sSet(K.tx, JSON.stringify(usedArr));
-  premium = true;
-  await sSet(K.pm,'1');
-  payStatus('✅ <b>¡Pago verificado en la blockchain!</b> Premium activado para siempre. 👑', 'ok');
-  setTimeout(()=>{
-    closePay();
-    renderChipLogo();
-    render();
-    toast('👑 ¡Bienvenido a Premium!');
-  }, 1600);
-}
-
-/* bankroll */
 function openBk(){
   $('bkInit').value = bankroll.init||'';
   $('bkDay').value = bankroll.day||'';
@@ -1300,7 +1062,6 @@ async function saveBk(){
   closeBk(); render(); toast('🎯 Bankroll configurado');
 }
 
-/* exportar CSV */
 function exportCSV(){
   if(!bets.length){ toast('No hay jugadas para exportar'); return; }
   const q = v => '"' + String(v==null?'':v).replace(/"/g,'""') + '"';
@@ -1324,11 +1085,9 @@ function exportCSV(){
   toast('📤 Historial exportado');
 }
 
-/* tutorial */
 function openTutorial(){ $('tutOverlay').classList.add('show'); }
 function closeTutorial(){ $('tutOverlay').classList.remove('show'); }
 
-/* toast */
 let toastTimer;
 function toast(msg){
   const t = $('toast');
