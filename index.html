@@ -303,7 +303,7 @@ textarea{resize:none;height:70px}
 <div class="wrap">
   <header>
     <div id="chipHolder"></div>
-    <div class="brand">VEGAS <span>50K</span></div>
+    <div class="brand" id="brandTitle" onclick="secretTap()">VEGAS <span>50K</span></div>
     <div class="sub">Dashboard de apuestas</div>
     <div id="badgeHolder"></div>
   </header>
@@ -460,7 +460,7 @@ const CHIPS = [
   {id:'sapphire',nm:'Zafiro 500K',  free:false, face:'#081a3a', spot:'#5aa2ff', txt:'#d3e5ff', denom:'500K$', sub:'WHALE ONLY',  accent:'#5aa2ff'}
 ];
 
-const K = { bets:'vegas50k-bets', tut:'vegas50k-tutorial-visto', cur:'vegas50k-moneda', pm:'vegas50k-premium', bank:'vegas50k-bankroll', chip:'vegas50k-ficha' };
+const K = { bets:'vegas50k-bets', tut:'vegas50k-tutorial-visto', cur:'vegas50k-moneda', pm:'vegas50k-premium', bank:'vegas50k-bankroll', chip:'vegas50k-ficha', admin:'vegas50k-admin' };
 
 let bets = [];
 let currency = null;
@@ -541,6 +541,7 @@ async function loadData(){
   const p = await sGet(K.pm);     premium = (p==='1');
   const bk = await sGet(K.bank);  if(bk) try{ bankroll = JSON.parse(bk); }catch(e){}
   const ch = await sGet(K.chip);  if(ch) chipSel = ch;
+  const ad = await sGet(K.admin); if(ad==='1'){ premium = true; window.__vegasAdmin = true; }
   if(!premium) chipSel = 'classic';
 
   await initPlayBilling();
@@ -842,9 +843,10 @@ function renderStats(){
 
 function renderMore(){
   const lock = () => premium ? '' : `<span class="lock">🔒 Premium</span>`;
+  const isAdmin = window.__vegasAdmin === true;
   app.innerHTML = `
   ${premium
-    ? `<div class="premium-cta" style="cursor:default"><h4>👑 PREMIUM ACTIVO</h4><p>Esta es la edición completa de Vegas 50K: todas las funciones desbloqueadas para siempre.</p></div>`
+    ? `<div class="premium-cta" style="cursor:default"><h4>👑 PREMIUM ACTIVO</h4><p>Esta es la edición completa de Vegas 50K: todas las funciones desbloqueadas para siempre.${isAdmin?' <br><small style=\"color:var(--muted)\">(Modo administrador)</small>':''}</p></div>`
     : `<div class="premium-cta" onclick="openPm()">
         <h4>👑 DESBLOQUEA TODO CON PREMIUM</h4>
         <p>Estadísticas Pro · Modo Bankroll · Exportar a Excel · Fichas coleccionables<br>Todo incluido en un solo pago</p>
@@ -1043,6 +1045,38 @@ async function buyPremiumPlay(){
   }catch(e){
     if(!e || e.name !== 'AbortError') toast('No se pudo completar la compra');
   }
+}
+
+/* ============ DESBLOQUEO ADMIN (solo para ti, en tu dispositivo) ============ */
+/* Cambia este código por el que quieras usar. Nadie mas lo vera ni lo necesita: */
+const ADMIN_CODE = 'DIEGO2026';
+let secretTaps = 0;
+let secretTimer = null;
+
+function secretTap(){
+  secretTaps++;
+  clearTimeout(secretTimer);
+  secretTimer = setTimeout(()=>{ secretTaps = 0; }, 1500);
+  if(secretTaps >= 7){
+    secretTaps = 0;
+    clearTimeout(secretTimer);
+    const code = prompt('Código de administrador:');
+    if(code === null) return;
+    if(code.trim() === ADMIN_CODE){
+      unlockAdminPremium();
+    }else if(code.trim() !== ''){
+      toast('❌ Código incorrecto');
+    }
+  }
+}
+
+async function unlockAdminPremium(){
+  premium = true;
+  await sSet(K.pm,'1');
+  await sSet(K.admin,'1');
+  renderChipLogo();
+  render();
+  toast('👑 Modo administrador activado');
 }
 
 function openBk(){
