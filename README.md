@@ -5,7 +5,7 @@ App web (PWA) para llevar el control personal de apuestas deportivas con estilo 
 - ✚ Registro de ganancias y pérdidas con notas y marcador
 - 📈 Profit total calculado automáticamente
 - ⚽ 12 deportes con marcador adaptativo
-- 📊 Estadísticas Pro, Modo Bankroll, exportación a Excel y fichas coleccionables (Premium)
+- 📊 Estadísticas Pro, Modo Bankroll, exportación a Excel y fichas coleccionables (Premium — compra dentro de la app vía Google Play Billing)
 - 💱 28 monedas
 - 🔒 Todos los datos se guardan únicamente en el dispositivo del usuario
 
