@@ -13,6 +13,9 @@ if('serviceWorker' in navigator){
   window.addEventListener('load', ()=> navigator.serviceWorker.register('sw.js').catch(()=>{}));
 }
 </script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -300,10 +303,23 @@ textarea{resize:none;height:70px}
 </style>
 </head>
 <body>
+<div class="overlay show" id="authOverlay" style="z-index:100">
+  <div class="modal">
+    <div class="chip-mini" id="authChip"></div>
+    <h3 class="gold">VEGAS 50K</h3>
+    <p>Inicia sesión con tu cuenta de Google para guardar tus jugadas en la nube. Tus datos quedan asociados solo a tu cuenta.</p>
+    <div class="modal-btns" style="flex-direction:column">
+      <button class="btn-gold" id="googleBtn" onclick="signInGoogle()">🔑 Iniciar sesión con Google</button>
+    </div>
+    <p id="authError" style="display:none;color:var(--loss);font-size:12.5px;margin-top:10px"></p>
+  </div>
+</div>
+
+<div id="appRoot" style="display:none">
 <div class="wrap">
   <header>
     <div id="chipHolder"></div>
-    <div class="brand" id="brandTitle" onclick="secretTap()">VEGAS <span>50K</span></div>
+    <div class="brand" id="brandTitle">VEGAS <span>50K</span></div>
     <div class="sub">Dashboard de apuestas</div>
     <div id="badgeHolder"></div>
   </header>
@@ -364,7 +380,7 @@ textarea{resize:none;height:70px}
     <div class="tut-step"><div class="tico">📈</div><div><b>Profit automático</b><p>Todo lo ganado se suma y lo perdido se resta. El total se actualiza al instante.</p></div></div>
     <div class="tut-step"><div class="tico">📋</div><div><b>Historial editable</b><p>Si te equivocas, elimina el registro y el profit se corrige solo.</p></div></div>
     <div class="tut-step"><div class="tico">👑</div><div><b>Premium</b><p>Desbloquea Estadísticas Pro, Modo Bankroll, exportar a Excel y fichas coleccionables con un único pago dentro de la app (menú Más).</p></div></div>
-    <div class="tut-step"><div class="tico">🔒</div><div><b>Guardado en tu dispositivo</b><p>Tus datos quedan guardados aunque cierres la app.</p></div></div>
+    <div class="tut-step"><div class="tico">🔒</div><div><b>Guardado en la nube</b><p>Tus datos quedan asociados a tu cuenta de Google, sin importar el dispositivo.</p></div></div>
     <div class="modal-btns" style="margin-top:6px">
       <button class="btn-gold" onclick="closeTutorial()">ENTENDIDO · ¡A JUGAR! 🎲</button>
     </div>
@@ -404,9 +420,41 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
+</div><!-- /appRoot -->
+
 <div class="toast" id="toast"></div>
 
 <script>
+/* ============ FIREBASE (LOGIN + GUARDADO EN LA NUBE) ============ */
+const firebaseConfig = {
+  apiKey: "AIzaSyB0wkRdEN41eTXFhp_FOh_ZB6JW1NrHs7E",
+  authDomain: "vegas-50k.firebaseapp.com",
+  projectId: "vegas-50k",
+  storageBucket: "vegas-50k.firebasestorage.app",
+  messagingSenderId: "460426053782",
+  appId: "1:460426053782:web:fdf260ba3378e87ffe1ab7"
+};
+/* Con este correo, Premium se activa automáticamente para ti, sin pagar. */
+const ADMIN_EMAIL = 'latouchettdiego@gmail.com';
+
+firebase.initializeApp(firebaseConfig);
+const fbAuth = firebase.auth();
+const fbDb = firebase.firestore();
+let currentUser = null;
+let cloudCache = {};
+
+function signInGoogle(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+  $('googleBtn').disabled = true;
+  fbAuth.signInWithPopup(provider).catch(e=>{
+    $('googleBtn').disabled = false;
+    const el = $('authError');
+    el.style.display = 'block';
+    el.textContent = 'No se pudo iniciar sesión. Intenta de nuevo.';
+  });
+}
+function signOutUser(){ fbAuth.signOut(); }
+
 /* ================= CONFIG ================= */
 const SPORTS = [
   {id:'futbol',   nm:'Fútbol',   ico:'⚽', score:'duo', ph:['Ej: Real Madrid vs Barcelona','Goles local','Goles visita']},
@@ -530,10 +578,19 @@ function renderChipLogo(){
   $('pmChip').innerHTML = `<div class="chip-mini">${chipSVG(64,'',CHIPS[1],'P')}</div>`;
 }
 
-/* Guardado real en el navegador (localStorage) — funciona en cualquier sitio publicado */
-async function sGet(key){ try{ const v = window.localStorage.getItem(key); return v; }catch(e){ return null; } }
-async function sSet(key,val){ try{ window.localStorage.setItem(key,val); }catch(e){ toast('⚠️ No se pudo guardar'); } }
-async function sDelete(key){ try{ window.localStorage.removeItem(key); }catch(e){} }
+/* Guardado en la nube (Firestore), asociado a la cuenta de Google del usuario */
+async function sGet(key){ return cloudCache[key] !== undefined ? cloudCache[key] : null; }
+async function sSet(key,val){
+  cloudCache[key] = val;
+  if(!currentUser) return;
+  try{ await fbDb.collection('vegas50k_users').doc(currentUser.uid).set({[key]: val}, {merge:true}); }
+  catch(e){ toast('⚠️ No se pudo guardar en la nube'); }
+}
+async function sDelete(key){
+  delete cloudCache[key];
+  if(!currentUser) return;
+  try{ await fbDb.collection('vegas50k_users').doc(currentUser.uid).update({[key]: firebase.firestore.FieldValue.delete()}); }catch(e){}
+}
 
 async function loadData(){
   const b = await sGet(K.bets);   if(b) try{ bets = JSON.parse(b); }catch(e){}
@@ -541,7 +598,7 @@ async function loadData(){
   const p = await sGet(K.pm);     premium = (p==='1');
   const bk = await sGet(K.bank);  if(bk) try{ bankroll = JSON.parse(bk); }catch(e){}
   const ch = await sGet(K.chip);  if(ch) chipSel = ch;
-  const ad = await sGet(K.admin); if(ad==='1'){ premium = true; window.__vegasAdmin = true; }
+  if(window.__vegasAdmin === true){ premium = true; }
   if(!premium) chipSel = 'classic';
 
   await initPlayBilling();
@@ -717,7 +774,7 @@ function renderHome(){
   </div>
   ${bets.length
     ? bets.slice(0,3).map(entryHTML).join('') + (bets.length>3? `<div style="text-align:center;margin-top:4px"><button class="del-btn" style="border-color:var(--gold-dim);color:var(--gold)" onclick="goTab('hist')">Ver historial completo (${bets.length}) →</button></div>`:'')
-    : `<div class="empty"><b>MESA VACÍA</b>Registra tu primera jugada arriba.<br>Todo queda guardado en tu dispositivo.</div>`}
+    : `<div class="empty"><b>MESA VACÍA</b>Registra tu primera jugada arriba.<br>Todo queda guardado en tu cuenta.</div>`}
   `;
 }
 
@@ -854,6 +911,11 @@ function renderMore(){
       </div>`}
 
   <div class="menu-card">
+    <div class="menu-item" style="cursor:default">
+      <span class="mi">👤</span>
+      <span class="mt"><b>Cuenta</b><small>${currentUser? esc(currentUser.email) : ''}${isAdmin? ' · Administrador':''}</small></span>
+      <button class="del-btn" onclick="signOutUser()" style="border-color:var(--gold-dim);color:var(--gold)">Cerrar sesión</button>
+    </div>
     <div class="menu-item" onclick="toggleCurSection()">
       <span class="mi">💱</span>
       <span class="mt"><b>Moneda</b><small>Actual: ${cur().flag} ${cur().code} — ${cur().name}</small></span>
@@ -886,7 +948,7 @@ function renderMore(){
       <span class="chev">›</span>
     </div>
   </div>
-  <p style="text-align:center;color:#55555f;font-size:11px;margin-top:18px;letter-spacing:.1em">VEGAS 50K · v3.1 · Tus datos viven solo en tu dispositivo</p>
+  <p style="text-align:center;color:#55555f;font-size:11px;margin-top:18px;letter-spacing:.1em">VEGAS 50K · v4.0 · Tus datos viven en la nube, asociados a tu cuenta</p>
   `;
 }
 function toggleCurSection(){
@@ -1047,38 +1109,6 @@ async function buyPremiumPlay(){
   }
 }
 
-/* ============ DESBLOQUEO ADMIN (solo para ti, en tu dispositivo) ============ */
-/* Cambia este código por el que quieras usar. Nadie mas lo vera ni lo necesita: */
-const ADMIN_CODE = 'DIEGO2026';
-let secretTaps = 0;
-let secretTimer = null;
-
-function secretTap(){
-  secretTaps++;
-  clearTimeout(secretTimer);
-  secretTimer = setTimeout(()=>{ secretTaps = 0; }, 1500);
-  if(secretTaps >= 7){
-    secretTaps = 0;
-    clearTimeout(secretTimer);
-    const code = prompt('Código de administrador:');
-    if(code === null) return;
-    if(code.trim() === ADMIN_CODE){
-      unlockAdminPremium();
-    }else if(code.trim() !== ''){
-      toast('❌ Código incorrecto');
-    }
-  }
-}
-
-async function unlockAdminPremium(){
-  premium = true;
-  await sSet(K.pm,'1');
-  await sSet(K.admin,'1');
-  renderChipLogo();
-  render();
-  toast('👑 Modo administrador activado');
-}
-
 function openBk(){
   $('bkInit').value = bankroll.init||'';
   $('bkDay').value = bankroll.day||'';
@@ -1130,7 +1160,27 @@ function toast(msg){
   toastTimer = setTimeout(()=>t.classList.remove('show'), 2400);
 }
 
-loadData();
+/* ================= FLUJO DE SESION ================= */
+$('authChip').innerHTML = chipSVG(64,'',null,'A');
+fbAuth.onAuthStateChanged(async (user)=>{
+  if(user){
+    currentUser = user;
+    $('authOverlay').classList.remove('show');
+    $('appRoot').style.display = '';
+    try{
+      const snap = await fbDb.collection('vegas50k_users').doc(user.uid).get();
+      cloudCache = snap.exists ? (snap.data()||{}) : {};
+    }catch(e){ cloudCache = {}; toast('⚠️ No se pudo conectar con la nube'); }
+    if(user.email === ADMIN_EMAIL){ window.__vegasAdmin = true; }
+    await loadData();
+  }else{
+    currentUser = null;
+    cloudCache = {};
+    $('appRoot').style.display = 'none';
+    $('authOverlay').classList.add('show');
+    if($('googleBtn')) $('googleBtn').disabled = false;
+  }
+});
 </script>
 </body>
 </html>
