@@ -443,14 +443,37 @@ const fbDb = firebase.firestore();
 let currentUser = null;
 let cloudCache = {};
 
+/* Guarda la sesión de forma permanente en este navegador/dispositivo,
+   para que no haya que iniciar sesión cada vez que se abre la app. */
+fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+
+/* Una app instalada (PWA en pantalla completa) no puede abrir ventanas
+   emergentes, así que ahí usamos redirección en vez de popup. */
+function isStandaloneApp(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
 function signInGoogle(){
   const provider = new firebase.auth.GoogleAuthProvider();
   $('googleBtn').disabled = true;
-  fbAuth.signInWithPopup(provider).catch(e=>{
+  const showError = ()=>{
     $('googleBtn').disabled = false;
     const el = $('authError');
     el.style.display = 'block';
     el.textContent = 'No se pudo iniciar sesión. Intenta de nuevo.';
+  };
+  if(isStandaloneApp()){
+    /* la app instalada no soporta ventanas emergentes: se redirige la pantalla entera */
+    fbAuth.signInWithRedirect(provider).catch(showError);
+    return;
+  }
+  fbAuth.signInWithPopup(provider).catch(e=>{
+    const code = e && e.code;
+    if(code==='auth/popup-blocked' || code==='auth/operation-not-supported-in-this-environment' || code==='auth/cancelled-popup-request'){
+      fbAuth.signInWithRedirect(provider).catch(showError);
+    }else{
+      showError();
+    }
   });
 }
 function signOutUser(){ fbAuth.signOut(); }
@@ -501,14 +524,24 @@ const CURRENCIES = {
   USDC:{flag:'🔵', code:'USDC', name:'USD Coin',           sym:'',     dec:2, loc:'en-US', suf:' USDC'}
 };
 const CHIPS = [
-  {id:'classic', nm:'Clásica 50K',  free:true,  face:'#0d0d10', spot:'#f2efe6', txt:'#f2efe6', denom:'50K$',  sub:'HIGH ROLLER', accent:'#d4af37'},
-  {id:'gold',    nm:'Dorada 100K',  free:false, face:'#2b2008', spot:'#ffd700', txt:'#ffe9a8', denom:'100K$', sub:'GOLDEN CLUB', accent:'#ffd700'},
-  {id:'ruby',    nm:'Rubí 5K',      free:false, face:'#3d0a12', spot:'#ff4d5e', txt:'#ffd6da', denom:'5K$',   sub:'RED TABLE',   accent:'#ff4d5e'},
-  {id:'emerald', nm:'Esmeralda 25K',free:false, face:'#062e1f', spot:'#3ddc84', txt:'#c9f5dd', denom:'25K$',  sub:'FELT MASTER', accent:'#3ddc84'},
-  {id:'sapphire',nm:'Zafiro 500K',  free:false, face:'#081a3a', spot:'#5aa2ff', txt:'#d3e5ff', denom:'500K$', sub:'WHALE ONLY',  accent:'#5aa2ff'}
+  {id:'classic',  nm:'Clásica 50K',   free:true,  face:'#0d0d10', spot:'#f2efe6', txt:'#f2efe6', denom:'50K$',   sub:'HIGH ROLLER',  accent:'#d4af37'},
+  {id:'gold',     nm:'Dorada 100K',   free:false, face:'#241a05', spot:'#ffd700', txt:'#fff2c2', denom:'100K$',  sub:'GOLDEN CLUB',  accent:'#ffd700', sparkle:true, gem:true},
+  {id:'ruby',     nm:'Rubí 5K',       free:false, face:'#3d0a12', spot:'#ff4d5e', txt:'#ffd6da', denom:'5K$',    sub:'RED TABLE',    accent:'#ff4d5e'},
+  {id:'emerald',  nm:'Esmeralda 25K', free:false, face:'#062e1f', spot:'#3ddc84', txt:'#c9f5dd', denom:'25K$',   sub:'FELT MASTER',  accent:'#3ddc84'},
+  {id:'sapphire', nm:'Zafiro 500K',   free:false, face:'#081a3a', spot:'#5aa2ff', txt:'#d3e5ff', denom:'500K$',  sub:'WHALE ONLY',   accent:'#5aa2ff'},
+  {id:'diamond',  nm:'Diamante 1M',   free:false, face:'#0c1620', spot:'#e8f6ff', txt:'#ffffff', denom:'1M$',    sub:'ICE VAULT',    accent:'#8fe3ff', sparkle:true, gem:true},
+  {id:'platinum', nm:'Platino ∞',     free:false, face:'#16181c', spot:'#e4e6ea', txt:'#f5f6f8', denom:'∞',      sub:'LEGEND STATUS',accent:'#c9ccd1', sparkle:true, gem:true}
 ];
 
-const K = { bets:'vegas50k-bets', tut:'vegas50k-tutorial-visto', cur:'vegas50k-moneda', pm:'vegas50k-premium', bank:'vegas50k-bankroll', chip:'vegas50k-ficha', admin:'vegas50k-admin' };
+const THEMES = [
+  {id:'vegas',    nm:'Vegas Clásico', free:true,  vars:{'--gold':'#d4af37','--gold-dim':'#8f7a2e','--win':'#3ddc84','--loss':'#ff4d5e','--noir':'#0b0b0e','--panel':'#141419','--panel2':'#1a1a21','--felt':'#0e3b2a'}},
+  {id:'velvet',   nm:'Red Velvet',    free:false, vars:{'--gold':'#e0464f','--gold-dim':'#8f2b31','--win':'#3ddc84','--loss':'#ff8a5c','--noir':'#0e0808','--panel':'#1a1112','--panel2':'#211416','--felt':'#3d0a12'}},
+  {id:'emerald',  nm:'Mesa Esmeralda',free:false, vars:{'--gold':'#2fce7a','--gold-dim':'#1d8a53','--win':'#7ee8a8','--loss':'#ff4d5e','--noir':'#07120d','--panel':'#0f1e17','--panel2':'#13271d','--felt':'#0e3b2a'}},
+  {id:'neon',     nm:'Neón Miami',    free:false, vars:{'--gold':'#ff2ea6','--gold-dim':'#a11a6b','--win':'#2ee6d6','--loss':'#ff5470','--noir':'#0a0714','--panel':'#150f26','--panel2':'#1c1433','--felt':'#141a3d'}},
+  {id:'platinum', nm:'Platino',       free:false, vars:{'--gold':'#c7cbd1','--gold-dim':'#83878d','--win':'#3ddc84','--loss':'#ff4d5e','--noir':'#0c0d0f','--panel':'#161719','--panel2':'#1d1f22','--felt':'#26282c'}}
+];
+
+const K = { bets:'vegas50k-bets', tut:'vegas50k-tutorial-visto', cur:'vegas50k-moneda', pm:'vegas50k-premium', bank:'vegas50k-bankroll', chip:'vegas50k-ficha', admin:'vegas50k-admin', theme:'vegas50k-tema' };
 
 let bets = [];
 let currency = null;
@@ -516,6 +549,7 @@ let curTemp = 'COP';
 let premium = false;
 let bankroll = {init:0, day:0, week:0};
 let chipSel = 'classic';
+let themeSel = 'vegas';
 let entryType = 'win';
 let sportSel = 'futbol';
 let tab = 'home';
@@ -527,6 +561,11 @@ const app = document.getElementById('app');
 const $ = id => document.getElementById(id);
 const getSport = id => SPORTS.find(s=>s.id===id) || SPORTS[SPORTS.length-1];
 const getChip = () => CHIPS.find(c=>c.id===chipSel) || CHIPS[0];
+const getTheme = () => THEMES.find(t=>t.id===themeSel) || THEMES[0];
+function applyTheme(id){
+  const t = THEMES.find(x=>x.id===id) || THEMES[0];
+  Object.entries(t.vars).forEach(([k,v])=> document.documentElement.style.setProperty(k, v));
+}
 const cur = () => CURRENCIES[currency] || CURRENCIES.COP;
 
 function fmt(n){
@@ -539,12 +578,33 @@ function esc(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'
 function chipSVG(size, cls, chipDef, idSuffix){
   const c = chipDef || getChip();
   let spots = '';
-  for(let i=0;i<8;i++) spots += `<rect x="91" y="4" width="18" height="20" rx="3" fill="${c.spot}" transform="rotate(${i*45} 100 100)"/>`;
+  if(c.sparkle){
+    /* destellos de diamante en vez de franjas planas, para las fichas premium */
+    for(let i=0;i<8;i++){
+      const a = i*45;
+      spots += `<g transform="rotate(${a} 100 100)">
+        <path d="M100,4 L106,16 L100,28 L94,16 Z" fill="${c.spot}"/>
+        <path d="M100,7 L103,16 L100,24 L97,16 Z" fill="${c.accent}" opacity="0.85"/>
+      </g>`;
+    }
+  }else{
+    for(let i=0;i<8;i++) spots += `<rect x="91" y="4" width="18" height="20" rx="3" fill="${c.spot}" transform="rotate(${i*45} 100 100)"/>`;
+  }
+  const gem = c.gem ? `
+    <defs>
+      <radialGradient id="gem${idSuffix}" cx="38%" cy="32%" r="75%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+        <stop offset="35%" stop-color="${c.accent}"/>
+        <stop offset="100%" stop-color="${c.face}"/>
+      </radialGradient>
+    </defs>
+    <path d="M100,46 L112,60 L100,88 L88,60 Z" fill="url(#gem${idSuffix})" stroke="${c.txt}" stroke-width="1" opacity="0.92"/>
+    <path d="M100,46 L112,60 L100,60 Z" fill="#ffffff" opacity="0.35"/>` : '';
   return `
   <svg class="${cls||''}" style="width:${size}px;height:${size}px" viewBox="0 0 200 200" ${cls==='chip'?'id="chipLogo" role="button" aria-label="Ficha de casino, toca para girar"':''}>
     <defs>
       <radialGradient id="shine${idSuffix}" cx="35%" cy="30%" r="80%">
-        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18"/>
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="${c.sparkle?'0.3':'0.18'}"/>
         <stop offset="55%" stop-color="${c.face}"/>
         <stop offset="100%" stop-color="#000"/>
       </radialGradient>
@@ -562,8 +622,9 @@ function chipSVG(size, cls, chipDef, idSuffix){
     <text font-family="Bebas Neue, sans-serif" font-size="11" fill="#8b8b98" letter-spacing="4">
       <textPath href="#arcB${idSuffix}" startOffset="50%" text-anchor="middle">CASINO · NEVADA</textPath>
     </text>
-    <text x="100" y="108" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="36" fill="${c.txt}" letter-spacing="1">${c.denom}</text>
-    <text x="100" y="126" text-anchor="middle" font-family="Barlow, sans-serif" font-size="8" fill="${c.accent}" letter-spacing="3">${c.sub}</text>
+    ${gem}
+    <text x="100" y="${c.gem?'138':'108'}" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="${c.gem?'26':'36'}" fill="${c.txt}" letter-spacing="1">${c.denom}</text>
+    <text x="100" y="${c.gem?'152':'126'}" text-anchor="middle" font-family="Barlow, sans-serif" font-size="8" fill="${c.accent}" letter-spacing="3">${c.sub}</text>
   </svg>`;
 }
 function renderChipLogo(){
@@ -598,8 +659,11 @@ async function loadData(){
   const p = await sGet(K.pm);     premium = (p==='1');
   const bk = await sGet(K.bank);  if(bk) try{ bankroll = JSON.parse(bk); }catch(e){}
   const ch = await sGet(K.chip);  if(ch) chipSel = ch;
+  const th = await sGet(K.theme); if(th) themeSel = th;
   if(window.__vegasAdmin === true){ premium = true; }
   if(!premium) chipSel = 'classic';
+  if(!premium){ const freeTheme = THEMES.find(t=>t.id===themeSel && t.free); if(!freeTheme) themeSel = 'vegas'; }
+  applyTheme(themeSel);
 
   await initPlayBilling();
   await checkPlayEntitlements();
@@ -801,6 +865,14 @@ function statsContent(){
   const {profit,totalW,totalL} = profitData();
   const wins = bets.filter(b=>b.type==='win').length;
   const wr = bets.length? Math.round(wins/bets.length*100) : 0;
+  /* tendencia: win rate de las ultimas 10 jugadas vs el resto, para ver si esta mejorando */
+  const chronoAsc = [...bets].sort((a,b)=> ts(a)-ts(b));
+  const last10 = chronoAsc.slice(-10);
+  const wrRecent = last10.length? Math.round(last10.filter(b=>b.type==='win').length/last10.length*100) : wr;
+  const wrTrend = bets.length>10 ? wrRecent - wr : 0;
+  const wrColor = wr>=50? 'var(--win)':'var(--loss)';
+  const ringR = 26, ringC = 2*Math.PI*ringR;
+  const ringOffset = ringC - (wr/100)*ringC;
   let streak = 0, streakType = null;
   for(const b of bets){ if(streakType===null) streakType=b.type; if(b.type===streakType) streak++; else break; }
   const best = bets.filter(b=>b.type==='win').reduce((m,b)=> b.amount>m? b.amount:m, 0);
@@ -847,7 +919,18 @@ function statsContent(){
     }).join('');
   return `
   <div class="stat-grid">
-    <div class="stat-box"><div class="l">Win rate</div><div class="v ${wr>=50?'pos':'neg'}">${wr}%</div></div>
+    <div class="stat-box" style="grid-column:span 2;display:flex;align-items:center;justify-content:center;gap:16px;text-align:left">
+      <svg width="64" height="64" viewBox="0 0 64 64" style="flex:0 0 64px;transform:rotate(-90deg)">
+        <circle cx="32" cy="32" r="${ringR}" fill="none" stroke="var(--panel2)" stroke-width="7"/>
+        <circle cx="32" cy="32" r="${ringR}" fill="none" stroke="${wrColor}" stroke-width="7" stroke-linecap="round"
+          stroke-dasharray="${ringC.toFixed(1)}" stroke-dashoffset="${ringOffset.toFixed(1)}"/>
+      </svg>
+      <div>
+        <div class="l" style="text-align:left">Win rate</div>
+        <div class="v" style="text-align:left;color:${wrColor}">${wr}%</div>
+        ${bets.length>10 ? `<div style="font-size:10.5px;color:${wrTrend>0?'var(--win)':wrTrend<0?'var(--loss)':'var(--muted)'};margin-top:2px">${wrTrend>0?'▲':wrTrend<0?'▼':'●'} ${wrTrend===0?'estable':(Math.abs(wrTrend)+'% en últimas 10')}</div>` : ''}
+      </div>
+    </div>
     <div class="stat-box"><div class="l">Racha actual</div><div class="v ${streakType==='win'?'pos':streakType==='loss'?'neg':''}">${streak? (streakType==='win'?'🔥 ':'🧊 ')+streak : '—'}</div></div>
     <div class="stat-box"><div class="l">Mejor jugada</div><div class="v pos">${best? '+'+fmt(best):'—'}</div></div>
     <div class="stat-box"><div class="l">Peor jugada</div><div class="v neg">${worst? '−'+fmt(worst):'—'}</div></div>
@@ -942,6 +1025,14 @@ function renderMore(){
     <div id="chipSection" style="display:none;padding:4px 16px 16px">
       <div class="chip-grid" id="chipGrid"></div>
     </div>
+    <div class="menu-item" onclick="toggleThemeSection()">
+      <span class="mi">🎨</span>
+      <span class="mt"><b>Temas de color</b><small>Cambia la paleta de toda la app · Actual: ${getTheme().nm}</small></span>
+      <span class="chev">›</span>
+    </div>
+    <div id="themeSection" style="display:none;padding:4px 16px 16px">
+      <div class="chip-grid" id="themeGrid"></div>
+    </div>
     <div class="menu-item" onclick="openTutorial()">
       <span class="mi">💡</span>
       <span class="mt"><b>Cómo funciona la app</b><small>Vuelve a ver el tutorial de bienvenida</small></span>
@@ -956,6 +1047,36 @@ function toggleCurSection(){
   const show = s.style.display==='none';
   s.style.display = show? 'block':'none';
   if(show) buildCurGrid('curGridMore', false);
+}
+function toggleThemeSection(){
+  const s = $('themeSection');
+  const show = s.style.display==='none';
+  s.style.display = show? 'block':'none';
+  if(show) buildThemeGrid();
+}
+function buildThemeGrid(){
+  $('themeGrid').innerHTML = THEMES.map(t=>`
+    <div class="chip-opt ${t.id===themeSel?'sel':''}" onclick="pickTheme('${t.id}')" style="padding:10px 6px">
+      ${!t.free && !premium ? '<span class="cplock">🔒</span>':''}
+      <div style="display:flex;gap:5px;justify-content:center;margin-bottom:6px">
+        <span style="width:16px;height:16px;border-radius:50%;background:${t.vars['--gold']};display:inline-block"></span>
+        <span style="width:16px;height:16px;border-radius:50%;background:${t.vars['--win']};display:inline-block"></span>
+        <span style="width:16px;height:16px;border-radius:50%;background:${t.vars['--panel2']};display:inline-block;border:1px solid var(--line)"></span>
+      </div>
+      <div class="cpn" style="color:${t.id===themeSel?'var(--gold)':'var(--muted)'}">${t.nm}</div>
+    </div>`).join('');
+}
+async function pickTheme(id){
+  const t = THEMES.find(x=>x.id===id);
+  if(!t.free && !premium){ openPm(); return; }
+  themeSel = id;
+  await sSet(K.theme, id);
+  applyTheme(id);
+  buildThemeGrid();
+  renderMore();
+  toast(`🎨 Tema: ${t.nm}`);
+  const s = $('themeSection'); if(s) s.style.display='block';
+  if($('themeGrid')) buildThemeGrid();
 }
 function toggleChipSection(){
   const s = $('chipSection');
@@ -1126,8 +1247,7 @@ async function saveBk(){
   closeBk(); render(); toast('🎯 Bankroll configurado');
 }
 
-function exportCSV(){
-  if(!bets.length){ toast('No hay jugadas para exportar'); return; }
+function buildCSV(){
   const q = v => '"' + String(v==null?'':v).replace(/"/g,'""') + '"';
   const rows = [['Fecha','Tipo','Deporte','Partido/Evento','Marcador','Nota',`Monto (${cur().code})`,'Efecto en profit']];
   bets.forEach(b=>{
@@ -1139,7 +1259,11 @@ function exportCSV(){
   rows.push(['Total ganado','', '', '', '', '', totalW]);
   rows.push(['Total perdido','', '', '', '', '', totalL]);
   rows.push(['PROFIT','', '', '', '', '', profit]);
-  const csv = '\uFEFF' + rows.map(r=> r.map(q).join(';')).join('\r\n');
+  return rows.map(r=> r.map(q).join(';')).join('\r\n');
+}
+function exportCSV(){
+  if(!bets.length){ toast('No hay jugadas para exportar'); return; }
+  const csv = '\uFEFF' + buildCSV();
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1162,6 +1286,11 @@ function toast(msg){
 
 /* ================= FLUJO DE SESION ================= */
 $('authChip').innerHTML = chipSVG(64,'',null,'A');
+fbAuth.getRedirectResult().catch(e=>{
+  const el = $('authError');
+  if(el){ el.style.display = 'block'; el.textContent = 'No se pudo completar el inicio de sesión. Intenta de nuevo.'; }
+  if($('googleBtn')) $('googleBtn').disabled = false;
+});
 fbAuth.onAuthStateChanged(async (user)=>{
   if(user){
     currentUser = user;
